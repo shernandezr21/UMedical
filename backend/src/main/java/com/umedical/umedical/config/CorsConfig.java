@@ -15,7 +15,7 @@ import java.util.List;
  * el panel Angular (http://localhost:4200) y la app Ionic
  * (http://localhost:8100 en navegador / capacitor://localhost en dispositivo).
  * Sin esto, el navegador bloquea las peticiones aunque el backend este
- * funcionando perfecto - es una proteccion del lado del navegador, no del
+ * funcionando perfecto y es una proteccion del lado del navegador, no del
  * servidor, por eso hay que declararlo explicitamente aqui.
  */
 @Configuration
