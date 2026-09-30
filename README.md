@@ -2,17 +2,17 @@
 
 | Item | Ubicacion |
 |---|---|
-| Script de base de datos (3FN) | `database/schema.sql` |
-| Diagrama Entidad-Relacion + justificacion 3FN | `database/DER.md` |
+| Script de base de datos | `database/schema.sql` |
+| Diagrama Entidad-Relacion + justificacion | `database/DER.md` |
 | Backend Spring Boot (modelos JPA, repos, seguridad JWT) | `backend/` |
 | Coleccion Postman (login + endpoints basicos + RBAC) | `postman/` |
 
 ## 1. Requisitos previos
 
 - Java 21 (JDK)
-- Maven 3.9+ (o usa el wrapper si lo agregas: `mvn -v` para verificar)
-- MySQL 8+
-- Postman (opcional, para probar la coleccion)
+- Maven 3.9+
+- MySQL
+- Postman
 
 ## 2. Levantar la base de datos
 
@@ -61,10 +61,10 @@ El servidor arranca en `http://localhost:8080`.
 4. Correr el resto de requests de la carpeta **Endpoints protegidos** — ya usan
    `Authorization: Bearer {{token}}`.
 5. La request **Especialidades SIN token** confirma que el endpoint rechaza
-   peticiones no autenticadas (401), verificando que Spring Security + JWT
+   peticiones no autenticadas (403), verificando que Spring Security + JWT
    estan realmente protegiendo la API.
 
-## 5. Endpoints implementados hasta 7 sept 2026
+## 5. Endpoints implementados hasta 24 sept 2026
 
 | Metodo | Ruta | Rol requerido | Descripcion |
 |---|---|---|---|
