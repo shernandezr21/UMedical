@@ -1,10 +1,16 @@
 package com.umedical.umedical.controller;
 
+import com.umedical.umedical.dto.CreateDoctorRequest;
 import com.umedical.umedical.dto.DoctorResponse;
 import com.umedical.umedical.entity.Doctor;
 import com.umedical.umedical.repository.DoctorRepository;
+import com.umedical.umedical.service.DoctorService;
+
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +22,11 @@ import java.util.List;
 public class DoctorController {
 
     private final DoctorRepository doctorRepository;
+    private final DoctorService doctorService;
 
-    public DoctorController(DoctorRepository doctorRepository) {
+    public DoctorController(DoctorRepository doctorRepository, DoctorService doctorService) {
         this.doctorRepository = doctorRepository;
+        this.doctorService = doctorService;
     }
 
     @GetMapping
@@ -40,5 +48,11 @@ public class DoctorController {
                 .toList();
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping
+    @Operation(summary = "Crea un nuevo medico (usuario + perfil profesional)")
+    public ResponseEntity<DoctorResponse> createDoctor(@Valid @RequestBody CreateDoctorRequest request) {
+        return ResponseEntity.ok(doctorService.createDoctor(request));
     }
 }

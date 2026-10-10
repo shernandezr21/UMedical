@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.http.HttpMethod;
 
 /**
  * Configuracion central de seguridad. Define:
@@ -66,21 +67,41 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Endpoints publicos
-                        .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/v3/api-docs/**").permitAll()
+                    // Publicos
+                    .requestMatchers("/api/v1/auth/**").permitAll()
+                    .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/v3/api-docs/**").permitAll()
 
-                        // RBAC por rol (endpoints minimos de Fase 1)
-                        .requestMatchers("/api/v1/doctors/**", "/api/v1/specialties/**").hasAnyAuthority(
-                                "ROLE_ADMIN", "ROLE_DOCTOR", "ROLE_PATIENT", "ROLE_SECRETARY")
-                        .requestMatchers("/api/v1/schedules/available/**").hasAnyAuthority(
-                                "ROLE_PATIENT", "ROLE_ADMIN", "ROLE_SECRETARY")
-                        .requestMatchers("/api/v1/appointments/my-history").hasAuthority("ROLE_PATIENT")
-                        .requestMatchers("/api/v1/appointments/*/diagnosis").hasAuthority("ROLE_DOCTOR")
-                        .requestMatchers("/api/v1/appointments/**").hasAnyAuthority(
-                                "ROLE_PATIENT", "ROLE_ADMIN", "ROLE_SECRETARY")
+                    // Catalogos
+                    .requestMatchers(HttpMethod.GET, "/api/v1/doctors/**", "/api/v1/specialties/**").hasAnyAuthority(
+                            "ROLE_ADMIN", "ROLE_DOCTOR", "ROLE_PATIENT", "ROLE_SECRETARY")
+                    .requestMatchers(HttpMethod.POST, "/api/v1/doctors/**").hasAuthority("ROLE_ADMIN")
+                    .requestMatchers(HttpMethod.POST, "/api/v1/specialties").hasAuthority("ROLE_ADMIN")
+                    .requestMatchers(HttpMethod.PUT, "/api/v1/specialties/*").hasAuthority("ROLE_ADMIN")
 
-                        .anyRequest().authenticated())
+                    // Horarios
+                    .requestMatchers("/api/v1/schedules/available/**").hasAnyAuthority(
+                            "ROLE_PATIENT", "ROLE_ADMIN", "ROLE_SECRETARY")
+                    .requestMatchers(HttpMethod.POST, "/api/v1/schedules").hasAuthority("ROLE_ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/api/v1/schedules").hasAnyAuthority("ROLE_ADMIN", "ROLE_DOCTOR")
+
+                    // Citas: endpoints especificos del doctor
+                    .requestMatchers("/api/v1/appointments/my-agenda").hasAuthority("ROLE_DOCTOR")
+                    .requestMatchers("/api/v1/appointments/my-agenda-range").hasAuthority("ROLE_DOCTOR")
+                    .requestMatchers("/api/v1/appointments/*/diagnosis").hasAuthority("ROLE_DOCTOR")
+                    .requestMatchers("/api/v1/appointments/*/documents").hasAuthority("ROLE_DOCTOR")
+
+                    // Citas: endpoint especifico del paciente
+                    .requestMatchers("/api/v1/appointments/my-history").hasAuthority("ROLE_PATIENT")
+
+                    // Documentos (PDF adjunto)
+                    .requestMatchers(HttpMethod.POST, "/api/v1/documents/*/file").hasAuthority("ROLE_DOCTOR")
+                    .requestMatchers(HttpMethod.GET, "/api/v1/documents/*/file").hasAnyAuthority("ROLE_DOCTOR", "ROLE_PATIENT")
+
+                    // Citas: regla generica (crear cita). Va al final, despues de las especificas
+                    .requestMatchers("/api/v1/appointments/**").hasAnyAuthority(
+                            "ROLE_PATIENT", "ROLE_ADMIN", "ROLE_SECRETARY")
+
+                    .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

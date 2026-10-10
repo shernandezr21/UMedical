@@ -12,10 +12,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -58,6 +60,33 @@ public class AppointmentController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/my-agenda")
+    @Operation(summary = "Agenda del dia del doctor autenticado")
+    public ResponseEntity<List<AppointmentResponse>> getMyAgenda(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+        return ResponseEntity.ok(appointmentService.getMyAgenda(currentUser.getId(), date));
+    }
+
+    @GetMapping("/{id}/documents")
+    @Operation(summary = "Lista los documentos (diagnostico/receta) de una cita del doctor autenticado")
+    public ResponseEntity<List<DocumentResponse>> getDocuments(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(appointmentService.getDocumentsForAppointment(currentUser.getId(), id));
+    }
+
+    @GetMapping("/my-agenda-range")
+    @Operation(summary = "Agenda del doctor en un rango de fechas (vista de calendario semanal)")
+    public ResponseEntity<List<AppointmentResponse>> getMyAgendaRange(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
+        return ResponseEntity.ok(appointmentService.getMyAgendaRange(currentUser.getId(), startDate, endDate));
+    }
 
 
 }

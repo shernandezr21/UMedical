@@ -1,0 +1,249 @@
+<h2 class="page-title">Mi agenda</h2>
+<p class="page-subtitle">Vista semanal de tus citas.</p>
+
+@if (openDiagnosisId() === null) {
+  @if (errorMessage()) {
+    <div class="alert alert-error">{{ errorMessage() }}</div>
+  }
+  @if (successMessage()) {
+    <div class="alert alert-success">{{ successMessage() }}</div>
+  }
+}
+
+<div class="calendar-nav">
+  <button type="button" class="btn btn-secondary" (click)="previousWeek()">&larr; Semana anterior</button>
+  <span class="calendar-nav__label">{{ weekRangeLabel() }}</span>
+  <button type="button" class="btn btn-secondary" (click)="nextWeek()">Semana siguiente &rarr;</button>
+</div>
+
+@if (isLoading()) {
+  <p style="color: var(--color-muted);">Cargando...</p>
+} @else {
+  <div class="calendar-grid">
+    @for (day of weekDays(); track day.iso) {
+      <div class="calendar-day" [class.calendar-day--selected]="day.iso === selectedDate()" (click)="selectDay(day.iso)">
+        <p class="calendar-day__label" [class.calendar-day__label--today]="day.isToday">{{ day.label }}</p>
+        @for (appt of appointmentsForDay(day.iso); track appt.id) {
+          <div class="calendar-chip" [class]="'calendar-chip--' + appt.status.toLowerCase()">
+            {{ appt.appointmentTime.slice(0, 5) }} {{ appt.patientName }}
+          </div>
+        }
+        @if (appointmentsForDay(day.iso).length === 0) {
+          <p class="calendar-day__empty">Sin citas</p>
+        }
+      </div>
+    }
+  </div>
+}
+
+<h3 style="font-size: 1.15rem; margin: 2rem 0 1rem;">Detalle del dia seleccionado</h3>
+
+@if (appointmentsForSelectedDate().length === 0) {
+  <div class="card">
+    <p style="color: var(--color-muted);">No hay citas para este dia.</p>
+  </div>
+} @else {
+  @for (appt of appointmentsForSelectedDate(); track appt.id) {
+    <div class="card" style="margin-bottom: 1rem;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+          <p style="font-weight: 500; font-size: 1.05rem;">{{ appt.appointmentTime }} — {{ appt.patientName }}</p>
+          <p style="color: var(--color-muted); font-size: 0.85rem; margin-top: 0.2rem;">
+            {{ appt.reason || 'Sin motivo especificado' }}
+          </p>
+        </div>
+        <span [class]="statusClass(appt.status)">{{ appt.status }}</span>
+      </div>
+
+      @if (appt.status !== 'CANCELADA') {
+        <button type="button" class="btn btn-secondary" style="margin-top: 1rem;" (click)="toggleDiagnosis(appt.id)">
+          {{ openDiagnosisId() === appt.id ? 'Cerrar' : 'Ver / registrar diagnostico y receta' }}
+        </button>
+      }
+
+      @if (openDiagnosisId() === appt.id) {
+        <div style="margin-top: 1rem; border-top: 1px solid var(--color-border); padding-top: 1rem;">
+
+          @if (errorMessage()) {
+            <div class="alert alert-error">{{ errorMessage() }}</div>
+          }
+          @if (successMessage()) {
+            <div class="alert alert-success">{{ successMessage() }}</div>
+          }
+
+          @if (existingDocuments().length > 0) {
+            <h4 style="font-size: 0.9rem; margin-bottom: 0.6rem; color: var(--color-muted);">Historial de esta cita</h4>
+            @for (doc of existingDocuments(); track doc.id) {
+              <div style="background: var(--color-bg); border-radius: var(--radius-sm); padding: 0.7rem 0.9rem; margin-bottom: 0.6rem;">
+                <strong style="font-size: 0.85rem;">{{ doc.type }}</strong>
+                <p style="font-size: 0.88rem; margin-top: 0.2rem;">{{ doc.content }}</p>
+                @if (doc.fileName) {
+                  <button type="button" class="btn btn-ghost" style="color: var(--color-primary); margin-top: 0.4rem; padding-left: 0;" (click)="viewFile(doc.id)">
+                    Ver PDF: {{ doc.fileName }}
+                  </button>
+                } @else {
+                  <label class="field" style="margin: 0.6rem 0 0;">
+                    <span>Adjuntar PDF (opcional)</span>
+                    <input type="file" accept="application/pdf" (change)="attachFile(doc, $event)" />
+                  </label>
+                }
+              </div>
+            }
+          }
+
+          <h4 style="font-size: 0.9rem; margin-bottom: 0.6rem; color: var(--color-muted);">Agregar nueva entrada</h4>
+          <form [formGroup]="diagnosisForm" (ngSubmit)="submitDiagnosis(appt.id)" novalidate>
+            <label class="field">
+              <span>Tipo de documento</span>
+              <select formControlName="type">
+                <option value="DIAGNOSTICO">Diagnostico</option>
+                <option value="RECETA">Receta</option>
+              </select>
+            </label>
+
+            <label class="field" [class.field--error]="diagnosisForm.controls.content.invalid && diagnosisForm.controls.content.touched">
+              <span>Contenido</span>
+              <textarea formControlName="content" rows="3"></textarea>
+              @if (diagnosisForm.controls.content.invalid && diagnosisForm.controls.content.touched) {
+                <p class="field__hint">El contenido es obligatorio.</p>
+              }
+            </label>
+
+            <label class="field" [class.field--error]="fileError()">
+              <span>Adjuntar PDF (opcional, maximo 10 MB)</span>
+              <input #pdfInput type="file" accept="application/pdf" (change)="onFileSelected($event)" />
+              @if (fileError()) {
+                <p class="field__hint">{{ fileError() }}</p>
+              }
+            </label>
+
+            <button type="submit" class="btn btn-primary" [disabled]="isSaving()">
+              {{ isSaving() ? 'Guardando...' : 'Guardar documento' }}
+            </button>
+          </form>
+        </div>
+      }
+    </div>
+  }
+}
+
+<!-- <h2 class="page-title">Mi agenda</h2>
+<p class="page-subtitle">Vista semanal de tus citas.</p>
+
+@if (errorMessage()) {
+  <div class="alert alert-error">{{ errorMessage() }}</div>
+}
+
+<div class="calendar-nav">
+  <button type="button" class="btn btn-secondary" (click)="previousWeek()">&larr; Semana anterior</button>
+  <span class="calendar-nav__label">{{ weekRangeLabel() }}</span>
+  <button type="button" class="btn btn-secondary" (click)="nextWeek()">Semana siguiente &rarr;</button>
+</div>
+
+@if (isLoading()) {
+  <p style="color: var(--color-muted);">Cargando...</p>
+} @else {
+  <div class="calendar-grid">
+    @for (day of weekDays(); track day.iso) {
+      <div class="calendar-day" [class.calendar-day--selected]="day.iso === selectedDate()" (click)="selectDay(day.iso)">
+        <p class="calendar-day__label" [class.calendar-day__label--today]="day.isToday">{{ day.label }}</p>
+        @for (appt of appointmentsForDay(day.iso); track appt.id) {
+          <div class="calendar-chip" [class]="'calendar-chip--' + appt.status.toLowerCase()">
+            {{ appt.appointmentTime.slice(0, 5) }} {{ appt.patientName }}
+          </div>
+        }
+        @if (appointmentsForDay(day.iso).length === 0) {
+          <p class="calendar-day__empty">Sin citas</p>
+        }
+      </div>
+    }
+  </div>
+}
+
+<h3 style="font-size: 1.15rem; margin: 2rem 0 1rem;">Detalle del dia seleccionado</h3>
+
+@if (appointmentsForSelectedDate().length === 0) {
+  <div class="card">
+    <p style="color: var(--color-muted);">No hay citas para este dia.</p>
+  </div>
+} @else {
+  @for (appt of appointmentsForSelectedDate(); track appt.id) {
+    <div class="card" style="margin-bottom: 1rem;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+          <p style="font-weight: 500; font-size: 1.05rem;">{{ appt.appointmentTime }} — {{ appt.patientName }}</p>
+          <p style="color: var(--color-muted); font-size: 0.85rem; margin-top: 0.2rem;">
+            {{ appt.reason || 'Sin motivo especificado' }}
+          </p>
+        </div>
+        <span [class]="statusClass(appt.status)">{{ appt.status }}</span>
+      </div>
+
+      @if (appt.status !== 'CANCELADA') {
+        <button type="button" class="btn btn-secondary" style="margin-top: 1rem;" (click)="toggleDiagnosis(appt.id)">
+          {{ openDiagnosisId() === appt.id ? 'Cerrar' : 'Ver / registrar diagnostico y receta' }}
+        </button>
+      }
+
+      @if (openDiagnosisId() === appt.id) {
+        <div style="margin-top: 1rem; border-top: 1px solid var(--color-border); padding-top: 1rem;">
+
+          @if (existingDocuments().length > 0) {
+            <h4 style="font-size: 0.9rem; margin-bottom: 0.6rem; color: var(--color-muted);">Historial de esta cita</h4>
+            @for (doc of existingDocuments(); track doc.id) {
+              <div style="background: var(--color-bg); border-radius: var(--radius-sm); padding: 0.7rem 0.9rem; margin-bottom: 0.6rem;">
+                <strong style="font-size: 0.85rem;">{{ doc.type }}</strong>
+                <p style="font-size: 0.88rem; margin-top: 0.2rem;">{{ doc.content }}</p>
+                @if (doc.fileName) {
+                  <button type="button" class="btn-ghost" style="color: var(--color-primary); margin-top: 0.4rem;" (click)="viewFile(doc.id)">
+                    Ver PDF adjunto
+                  </button>
+                }
+              </div>
+            }
+          }
+
+          @if (!lastCreatedDocumentId()) {
+            <h4 style="font-size: 0.9rem; margin-bottom: 0.6rem; color: var(--color-muted);">Agregar nueva entrada</h4>
+            <form [formGroup]="diagnosisForm" (ngSubmit)="submitDiagnosis(appt.id)">
+              <label class="field">
+                <span>Tipo de documento</span>
+                <select formControlName="type">
+                  <option value="DIAGNOSTICO">Diagnostico</option>
+                  <option value="RECETA">Receta</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>Contenido</span>
+                <textarea formControlName="content" rows="3"></textarea>
+              </label>
+
+              <button type="submit" class="btn btn-primary">Guardar documento</button>
+            </form>
+          } @else {
+            <div style="background: var(--color-completada-bg); padding: 0.9rem; border-radius: var(--radius-sm);">
+              <p style="color: var(--color-completada); font-size: 0.88rem; margin-bottom: 0.7rem;">
+                {{ successMessage() }}
+              </p>
+
+              <label class="field">
+                <span>Adjuntar PDF (opcional)</span>
+                <input type="file" accept="application/pdf" (change)="onFileSelected($event)" />
+              </label>
+
+              <div style="display: flex; gap: 0.6rem;">
+                <button type="button" class="btn btn-primary" [disabled]="!selectedFile() || isUploading()" (click)="uploadFile()">
+                  {{ isUploading() ? 'Subiendo...' : 'Subir PDF' }}
+                </button>
+                <button type="button" class="btn btn-secondary" (click)="closeDiagnosisPanel()">
+                  Omitir y cerrar
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+} -->

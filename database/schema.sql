@@ -118,6 +118,8 @@ CREATE TABLE documents (
     appointment_id BIGINT NOT NULL,
     type           VARCHAR(20) NOT NULL COMMENT 'DIAGNOSTICO, RECETA',
     content        TEXT NOT NULL,
+    file_name      VARCHAR(255),
+    file_path      VARCHAR(500),
     created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_documents_appointment FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE,
     CONSTRAINT chk_document_type CHECK (type IN ('DIAGNOSTICO', 'RECETA'))

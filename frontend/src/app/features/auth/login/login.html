@@ -1,0 +1,39 @@
+<div class="login-screen">
+  <aside class="login-screen__brand">
+    <div class="login-screen__brand-content">
+      <h1 class="login-screen__wordmark">U-Medical</h1>
+      <p class="login-screen__tagline">
+        Panel de gestion para servicios medicos.
+      </p>
+      <svg class="login-screen__pulse" viewBox="0 0 400 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0 30 H140 L160 10 L180 50 L200 20 L215 30 H400"
+              stroke="#F6F5F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.5" />
+      </svg>
+    </div>
+  </aside>
+
+  <main class="login-screen__form-panel">
+    <form class="login-form" [formGroup]="form" (ngSubmit)="submit()">
+      <h2 class="login-form__title">Acceso al panel</h2>
+      <p class="login-form__subtitle">Ingresa tus credenciales para continuar.</p>
+
+      @if (errorMessage()) {
+        <div class="login-form__error">{{ errorMessage() }}</div>
+      }
+
+      <label class="login-form__field">
+        <span>Usuario</span>
+        <input type="text" formControlName="username" autocomplete="username" />
+      </label>
+
+      <label class="login-form__field">
+        <span>Contrasena</span>
+        <input type="password" formControlName="password" autocomplete="current-password" />
+      </label>
+
+      <button type="submit" class="login-form__submit" [disabled]="isLoading()">
+        {{ isLoading() ? 'Verificando...' : 'Entrar' }}
+      </button>
+    </form>
+  </main>
+</div>

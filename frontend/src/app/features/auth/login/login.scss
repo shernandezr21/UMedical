@@ -1,0 +1,126 @@
+.login-screen {
+  display: flex;
+  min-height: 100vh;
+
+  &__brand {
+    flex: 1;
+    background: var(--color-primary);
+    display: flex;
+    align-items: center;
+    padding: 4rem;
+    position: relative;
+    overflow: hidden;
+
+    @media (max-width: 860px) {
+      display: none;
+    }
+  }
+
+  &__brand-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  &__wordmark {
+    font-size: 2.75rem;
+    color: #F6F5F1;
+    margin-bottom: 1rem;
+  }
+
+  &__tagline {
+    font-size: 1.05rem;
+    color: rgba(246, 245, 241, 0.75);
+    max-width: 320px;
+    line-height: 1.5;
+  }
+
+  &__pulse {
+    margin-top: 3rem;
+    width: 100%;
+    max-width: 380px;
+  }
+
+  &__form-panel {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg);
+    padding: 2rem;
+  }
+}
+
+.login-form {
+  width: 100%;
+  max-width: 360px;
+
+  &__title {
+    font-size: 1.75rem;
+    margin-bottom: 0.4rem;
+  }
+
+  &__subtitle {
+    color: var(--color-muted);
+    font-size: 0.9rem;
+    margin-bottom: 1.75rem;
+  }
+
+  &__error {
+    background: var(--color-cancelada-bg);
+    color: var(--color-cancelada);
+    padding: 0.7rem 0.9rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    margin-bottom: 1.25rem;
+  }
+
+  &__field {
+    display: block;
+    margin-bottom: 1.1rem;
+
+    span {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--color-muted);
+      margin-bottom: 0.35rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.65rem 0.8rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      background: var(--color-surface);
+      color: var(--color-ink);
+
+      &:focus {
+        outline: 2px solid var(--color-primary-light);
+        outline-offset: 1px;
+        border-color: var(--color-primary-light);
+      }
+    }
+  }
+
+  &__submit {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--color-primary);
+    color: #F6F5F1;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+    transition: background 0.15s ease;
+
+    &:hover:not(:disabled) {
+      background: var(--color-primary-light);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}

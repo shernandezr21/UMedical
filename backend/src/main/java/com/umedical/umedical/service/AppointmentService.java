@@ -19,6 +19,7 @@ import com.umedical.umedical.dto.DocumentResponse;
 import com.umedical.umedical.entity.Document;
 import com.umedical.umedical.repository.DocumentRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -123,12 +124,43 @@ public class AppointmentService {
         appointment.setStatus(AppointmentStatus.COMPLETADA);
         appointmentRepository.save(appointment);
 
-        return new DocumentResponse(document.getId(), document.getType(), document.getContent(), appointment.getId());
+        return new DocumentResponse(document.getId(), document.getType(), document.getContent(), appointment.getId(), document.getFileName());
     }
 
-    public List<DocumentResponse> getDocumentsByAppointment(Long appointmentId) {
+    // public List<DocumentResponse> getDocumentsByAppointment(Long appointmentId) {
+    //     return documentRepository.findByAppointmentId(appointmentId).stream()
+    //             .map(d -> new DocumentResponse(d.getId(), d.getType(), d.getContent(), appointmentId))
+    //             .toList();
+    // }
+
+    public List<DocumentResponse> getDocumentsForAppointment(Long doctorUserId, Long appointmentId) {
+    Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada"));
+
+        if (!appointment.getDoctor().getUser().getId().equals(doctorUserId)) {
+            throw new IllegalArgumentException("No puedes ver documentos de una cita que no es tuya");
+        }
+
         return documentRepository.findByAppointmentId(appointmentId).stream()
-                .map(d -> new DocumentResponse(d.getId(), d.getType(), d.getContent(), appointmentId))
+                .map(d -> new DocumentResponse(d.getId(), d.getType(), d.getContent(), appointmentId, d.getFileName()))
+                .toList();
+    }
+
+    public List<AppointmentResponse> getMyAgenda(Long doctorUserId, LocalDate date) {
+    Doctor doctor = doctorRepository.findByUserId(doctorUserId)
+            .orElseThrow(() -> new ResourceNotFoundException("Perfil de medico no encontrado"));
+
+        return appointmentRepository.findByDoctorIdAndAppointmentDate(doctor.getId(), date).stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<AppointmentResponse> getMyAgendaRange(Long doctorUserId, LocalDate start, LocalDate end) {
+    Doctor doctor = doctorRepository.findByUserId(doctorUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Perfil de medico no encontrado"));
+
+        return appointmentRepository.findByDoctorIdAndAppointmentDateBetween(doctor.getId(), start, end).stream()
+                .map(this::toResponse)
                 .toList();
     }
 }

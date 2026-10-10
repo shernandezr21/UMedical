@@ -1,0 +1,268 @@
+<h2 class="page-title">Nuevo medico</h2>
+<p class="page-subtitle">Crea el perfil profesional y asigna sus bloques de horario.</p>
+
+@if (errorMessage()) {
+  <div class="alert alert-error">{{ errorMessage() }}</div>
+}
+@if (successMessage()) {
+  <div class="alert alert-success">{{ successMessage() }}</div>
+}
+
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+
+  <div class="card" style="margin-bottom: 1.5rem;">
+    <h3 style="font-size: 1.1rem; margin-bottom: 1.1rem;">Datos del usuario</h3>
+
+    <div class="field-row">
+      <label class="field" [class.field--error]="errorText('username')">
+        <span>Usuario</span>
+        <input type="text" formControlName="username" />
+        @if (errorText('username'); as msg) { <p class="field__hint">{{ msg }}</p> }
+      </label>
+      <label class="field" [class.field--error]="errorText('email')">
+        <span>Email</span>
+        <input type="email" formControlName="email" />
+        @if (errorText('email'); as msg) { <p class="field__hint">{{ msg }}</p> }
+      </label>
+    </div>
+
+    <div class="field-row">
+      <label class="field" [class.field--error]="errorText('firstName')">
+        <span>Nombre</span>
+        <input type="text" formControlName="firstName" />
+        @if (errorText('firstName'); as msg) { <p class="field__hint">{{ msg }}</p> }
+      </label>
+      <label class="field" [class.field--error]="errorText('lastName')">
+        <span>Apellido</span>
+        <input type="text" formControlName="lastName" />
+        @if (errorText('lastName'); as msg) { <p class="field__hint">{{ msg }}</p> }
+      </label>
+    </div>
+
+    <div class="field-row">
+      <label class="field">
+        <span>Telefono (opcional)</span>
+        <input type="text" formControlName="phone" />
+      </label>
+      <label class="field" [class.field--error]="errorText('password')">
+        <span>Contrasena temporal</span>
+        <input type="password" formControlName="password" />
+        @if (errorText('password'); as msg) { <p class="field__hint">{{ msg }}</p> }
+      </label>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom: 1.5rem;">
+    <h3 style="font-size: 1.1rem; margin-bottom: 1.1rem;">Perfil profesional</h3>
+
+    <div class="field-row">
+      <label class="field" [class.field--error]="errorText('specialtyId')">
+        <span>Especialidad</span>
+        <select formControlName="specialtyId">
+          <option [ngValue]="null" disabled>Selecciona una especialidad</option>
+          @for (s of specialties(); track s.id) {
+            <option [ngValue]="s.id">{{ s.name }}</option>
+          }
+        </select>
+        @if (errorText('specialtyId'); as msg) { <p class="field__hint">{{ msg }}</p> }
+      </label>
+      <label class="field" [class.field--error]="errorText('licenseNumber')">
+        <span>Numero de colegiado</span>
+        <input type="text" formControlName="licenseNumber" />
+        @if (errorText('licenseNumber'); as msg) { <p class="field__hint">{{ msg }}</p> }
+      </label>
+    </div>
+
+    <label class="field">
+      <span>Biografia (opcional)</span>
+      <textarea formControlName="biography"></textarea>
+    </label>
+  </div>
+
+  <div class="card" formArrayName="schedules">
+    <h3 style="font-size: 1.1rem; margin-bottom: 1.1rem;">Bloques de horario</h3>
+
+    @if (schedules.errors?.['overlap']) {
+      <div class="alert alert-error">Hay dos bloques que se cruzan el mismo dia. Ajusta las horas.</div>
+    }
+
+    @for (g of schedules.controls; track $index) {
+      <div [formGroupName]="$index" style="border-bottom: 1px solid var(--color-border); padding-bottom: 1rem; margin-bottom: 1rem;">
+        <div class="field-row">
+          <label class="field">
+            <span>Dia de la semana</span>
+            <select formControlName="dayOfWeek">
+              <option [ngValue]="null" disabled>Selecciona un dia</option>
+              @for (d of diasSemana; track d.value) {
+                <option [ngValue]="d.value">{{ d.label }}</option>
+              }
+            </select>
+          </label>
+          <label class="field">
+            <span>Duracion del slot (min)</span>
+            <input type="number" min="5" formControlName="slotDurationMinutes" />
+          </label>
+        </div>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Hora de inicio</span>
+            <input type="time" formControlName="startTime" />
+          </label>
+          <label class="field">
+            <span>Hora de fin</span>
+            <input type="time" formControlName="endTime" />
+          </label>
+        </div>
+
+        @if (g.errors?.['endBeforeStart']) {
+          <p class="field__hint">La hora de fin debe ser posterior a la hora de inicio.</p>
+        }
+        @if (g.errors?.['slotTooLong']) {
+          <p class="field__hint">La duracion del slot no cabe dentro del bloque.</p>
+        }
+        @if (g.touched && g.invalid && !g.errors) {
+          <p class="field__hint">Completa todos los campos de este bloque.</p>
+        }
+
+        @if (schedules.length > 1) {
+          <button type="button" class="btn btn-ghost" (click)="removeSchedule($index)">
+            Quitar este bloque
+          </button>
+        }
+      </div>
+    }
+
+    <button type="button" class="btn btn-secondary" (click)="addSchedule()">
+      + Agregar otro bloque de horario
+    </button>
+  </div>
+
+  <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem;" [disabled]="isLoading()">
+    {{ isLoading() ? 'Guardando...' : 'Crear medico' }}
+  </button>
+</form>
+
+<!-- <h2 class="page-title">Nuevo medico</h2>
+<p class="page-subtitle">Crea el perfil profesional y asigna sus bloques de horario.</p>
+
+@if (errorMessage()) {
+  <div class="alert alert-error">{{ errorMessage() }}</div>
+}
+@if (successMessage()) {
+  <div class="alert alert-success">{{ successMessage() }}</div>
+}
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+
+  <div class="card" style="margin-bottom: 1.5rem;">
+    <h3 style="font-size: 1.1rem; margin-bottom: 1.1rem;">Datos del usuario</h3>
+
+    <div class="field-row">
+      <label class="field">
+        <span>Usuario</span>
+        <input type="text" formControlName="username" />
+      </label>
+      <label class="field">
+        <span>Email</span>
+        <input type="email" formControlName="email" />
+      </label>
+    </div>
+
+    <div class="field-row">
+      <label class="field">
+        <span>Nombre</span>
+        <input type="text" formControlName="firstName" />
+      </label>
+      <label class="field">
+        <span>Apellido</span>
+        <input type="text" formControlName="lastName" />
+      </label>
+    </div>
+
+    <div class="field-row">
+      <label class="field">
+        <span>Telefono</span>
+        <input type="text" formControlName="phone" />
+      </label>
+      <label class="field">
+        <span>Contrasena temporal</span>
+        <input type="password" formControlName="password" />
+      </label>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom: 1.5rem;">
+    <h3 style="font-size: 1.1rem; margin-bottom: 1.1rem;">Perfil profesional</h3>
+
+    <div class="field-row">
+      <label class="field">
+        <span>Especialidad</span>
+        <select formControlName="specialtyId">
+          <option [value]="null" disabled>Selecciona una especialidad</option>
+          @for (s of specialties(); track s.id) {
+            <option [value]="s.id">{{ s.name }}</option>
+          }
+        </select>
+      </label>
+      <label class="field">
+        <span>Numero de colegiado</span>
+        <input type="text" formControlName="licenseNumber" />
+      </label>
+    </div>
+
+    <label class="field">
+      <span>Biografia (opcional)</span>
+      <textarea formControlName="biography"></textarea>
+    </label>
+  </div>
+
+  <div class="card" formArrayName="schedules">
+    <h3 style="font-size: 1.1rem; margin-bottom: 1.1rem;">Bloques de horario</h3>
+
+    @for (scheduleGroup of schedules.controls; track $index) {
+      <div [formGroupName]="$index" style="border-bottom: 1px solid var(--color-border); padding-bottom: 1rem; margin-bottom: 1rem;">
+        <div class="field-row">
+          <label class="field">
+            <span>Dia de la semana</span>
+            <select formControlName="dayOfWeek">
+              <option [value]="null" disabled>Selecciona un dia</option>
+              @for (d of diasSemana; track d.value) {
+                <option [value]="d.value">{{ d.label }}</option>
+              }
+            </select>
+          </label>
+          <label class="field">
+            <span>Duracion del slot (min)</span>
+            <input type="number" formControlName="slotDurationMinutes" />
+          </label>
+        </div>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Hora de inicio</span>
+            <input type="time" formControlName="startTime" />
+          </label>
+          <label class="field">
+            <span>Hora de fin</span>
+            <input type="time" formControlName="endTime" />
+          </label>
+        </div>
+
+        @if (schedules.length > 1) {
+          <button type="button" class="btn btn-ghost" (click)="removeSchedule($index)">
+            Quitar este bloque
+          </button>
+        }
+      </div>
+    }
+
+    <button type="button" class="btn btn-secondary" (click)="addSchedule()">
+      + Agregar otro bloque de horario
+    </button>
+  </div>
+
+  <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem;" [disabled]="isLoading()">
+    {{ isLoading() ? 'Guardando...' : 'Crear medico' }}
+  </button>
+</form> -->

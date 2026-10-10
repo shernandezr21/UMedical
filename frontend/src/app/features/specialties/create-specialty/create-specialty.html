@@ -1,0 +1,97 @@
+<h2 class="page-title">Especialidades</h2>
+<p class="page-subtitle">Catalogo de especialidades medicas disponibles.</p>
+
+@if (errorMessage()) {
+  <div class="alert alert-error">{{ errorMessage() }}</div>
+}
+@if (successMessage()) {
+  <div class="alert alert-success">{{ successMessage() }}</div>
+}
+
+<div class="card" style="margin-bottom: 1.5rem;">
+  <h3 style="font-size: 1.1rem; margin-bottom: 1.1rem;">
+    {{ editingId() === null ? 'Nueva especialidad' : 'Editar especialidad' }}
+  </h3>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="field-row">
+      <label class="field" [class.field--error]="errorText()">
+        <span>Nombre</span>
+        <input type="text" formControlName="name" />
+        @if (errorText(); as msg) { <p class="field__hint">{{ msg }}</p> }
+      </label>
+      <label class="field">
+        <span>Descripcion (opcional)</span>
+        <input type="text" formControlName="description" />
+      </label>
+    </div>
+
+    <div style="display: flex; gap: 0.6rem;">
+      <button type="submit" class="btn btn-primary" [disabled]="isLoading()">
+        {{ isLoading() ? 'Guardando...' : (editingId() === null ? 'Agregar especialidad' : 'Guardar cambios') }}
+      </button>
+      @if (editingId() !== null) {
+        <button type="button" class="btn btn-secondary" (click)="cancelEdit()">Cancelar edicion</button>
+      }
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Especialidades actuales</h3>
+  <ul style="list-style: none; padding: 0; margin: 0;">
+    @for (s of specialties(); track s.id) {
+      <li style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--color-border);">
+        <div>
+          <strong>{{ s.name }}</strong>
+          @if (s.description) {
+            <span style="color: var(--color-muted); font-size: 0.85rem;"> — {{ s.description }}</span>
+          }
+        </div>
+        <button type="button" class="btn btn-secondary" (click)="startEdit(s)">Editar</button>
+      </li>
+    }
+  </ul>
+</div>
+
+<!-- <h2 class="page-title">Especialidades</h2>
+<p class="page-subtitle">Catalogo de especialidades medicas disponibles.</p>
+
+@if (errorMessage()) {
+  <div class="alert alert-error">{{ errorMessage() }}</div>
+}
+
+<div class="card" style="margin-bottom: 1.5rem;">
+  <h3 style="font-size: 1.1rem; margin-bottom: 1.1rem;">Nueva especialidad</h3>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="field-row">
+      <label class="field">
+        <span>Nombre</span>
+        <input type="text" formControlName="name" />
+      </label>
+      <label class="field">
+        <span>Descripcion (opcional)</span>
+        <input type="text" formControlName="description" />
+      </label>
+    </div>
+
+    <button type="submit" class="btn btn-primary" [disabled]="isLoading()">
+      {{ isLoading() ? 'Guardando...' : 'Agregar especialidad' }}
+    </button>
+  </form>
+</div>
+
+<div class="card">
+  <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Especialidades actuales</h3>
+  <ul style="list-style: none; padding: 0; margin: 0;">
+    @for (s of specialties(); track s.id) {
+      <li style="padding: 0.6rem 0; border-bottom: 1px solid var(--color-border);">
+        <strong>{{ s.name }}</strong>
+        @if (s.description) {
+          <span style="color: var(--color-muted); font-size: 0.85rem;"> — {{ s.description }}</span>
+        }
+      </li>
+    }
+  </ul>
+</div> -->

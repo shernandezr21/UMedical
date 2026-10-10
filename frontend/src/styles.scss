@@ -1,0 +1,189 @@
+:root {
+  // Color
+  --color-primary: #1B4B43;
+  --color-primary-light: #3D7A6E;
+  --color-bg: #F6F5F1;
+  --color-surface: #FFFFFF;
+  --color-ink: #1A2420;
+  --color-muted: #6B7A75;
+  --color-border: #DDE3E0;
+
+  // Estados (usados en badges de citas)
+  --color-pendiente: #C98A2C;
+  --color-pendiente-bg: #FBF1DF;
+  --color-completada: #3D7A4E;
+  --color-completada-bg: #E7F1E8;
+  --color-cancelada: #B4544A;
+  --color-cancelada-bg: #F7E9E7;
+
+  // Tipografia
+  --font-display: 'Source Serif 4', Georgia, serif;
+  --font-body: 'IBM Plex Sans', -apple-system, sans-serif;
+
+  // Espaciado
+  --radius-sm: 6px;
+  --radius-md: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  margin: 0;
+  color: var(--color-ink);
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+input, select, textarea {
+  font-family: var(--font-body);
+}
+
+a {
+  color: var(--color-primary);
+}
+
+// --- Componentes reutilizables de formulario/tarjeta ---
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.75rem;
+}
+
+.page-title {
+  font-size: 1.6rem;
+  margin-bottom: 0.3rem;
+}
+
+.page-subtitle {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.75rem;
+}
+
+.field {
+  display: block;
+  margin-bottom: 1.1rem;
+
+  span {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--color-muted);
+    margin-bottom: 0.35rem;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: 0.92rem;
+    background: var(--color-surface);
+    color: var(--color-ink);
+
+    &:focus {
+      outline: 2px solid var(--color-primary-light);
+      outline-offset: 1px;
+      border-color: var(--color-primary-light);
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  &--error input, &--error select {
+    border-color: var(--color-cancelada);
+  }
+
+  &__hint {
+    font-size: 0.78rem;
+    color: var(--color-cancelada);
+    margin-top: 0.3rem;
+  }
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.btn {
+  padding: 0.65rem 1.1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: none;
+  transition: background 0.15s ease;
+
+  &-primary {
+    background: var(--color-primary);
+    color: #F6F5F1;
+
+    &:hover:not(:disabled) { background: var(--color-primary-light); }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
+
+  &-secondary {
+    background: transparent;
+    color: var(--color-primary);
+    border: 1px solid var(--color-border);
+
+    &:hover { background: rgba(27, 75, 67, 0.05); }
+  }
+
+  &-ghost {
+    background: transparent;
+    color: var(--color-cancelada);
+    padding: 0.4rem 0.7rem;
+    font-size: 0.82rem;
+  }
+}
+
+.alert {
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  margin-bottom: 1.25rem;
+
+  &-error { background: var(--color-cancelada-bg); color: var(--color-cancelada); }
+  &-success { background: var(--color-completada-bg); color: var(--color-completada); }
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+
+  &-pendiente { background: var(--color-pendiente-bg); color: var(--color-pendiente); }
+  &-completada { background: var(--color-completada-bg); color: var(--color-completada); }
+  &-cancelada { background: var(--color-cancelada-bg); color: var(--color-cancelada); }
+}

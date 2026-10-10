@@ -18,4 +18,5 @@ import java.util.List;
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
     List<Appointment> findByPatientUserIdOrderByAppointmentDateDescAppointmentTimeDesc(Long patientUserId);
     List<Appointment> findByDoctorIdAndAppointmentDate(Long doctorId, LocalDate date);
+    List<Appointment> findByDoctorIdAndAppointmentDateBetween(Long doctorId, LocalDate start, LocalDate end);
 }

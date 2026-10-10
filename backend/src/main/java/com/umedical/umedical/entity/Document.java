@@ -31,6 +31,12 @@ public class Document {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @Column(name = "file_name", length = 255)
+    private String fileName;
+
+    @Column(name = "file_path", length = 500)
+    private String filePath;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }
