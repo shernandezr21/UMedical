@@ -1,0 +1,9 @@
+# Use this workspace to collaborate
+workspace:
+  id: 492e8bd7-3d3c-4f5b-8f3f-651e4e0a9c00
+
+localResources:
+  collections:
+    - ../citas-medicas.postman_collection.json
+  environments:
+    - ../citas-medicas.postman_environment.json

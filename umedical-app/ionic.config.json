@@ -1,0 +1,7 @@
+{
+  "name": "umedical-app",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
