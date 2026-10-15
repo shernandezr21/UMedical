@@ -1,18 +1,18 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, computed } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonButton,
-  IonText, IonSpinner, ViewWillEnter
+  IonSpinner, ViewWillEnter
 } from '@ionic/angular';
 import { AuthService } from '../core/auth.service';
 import { AppointmentsService } from '../core/appointments.service';
-import { Appointment, LoginResponse } from '../core/models';
+import { Appointment } from '../core/models';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, DatePipe, RouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonText, IonSpinner],
+  imports: [CommonModule, DatePipe, RouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonSpinner],
   template: `
     <ion-header>
       <ion-toolbar><ion-title>U-Medical</ion-title></ion-toolbar>
@@ -44,23 +44,24 @@ import { Appointment, LoginResponse } from '../core/models';
 export class HomePage implements OnInit, ViewWillEnter {
   private auth = inject(AuthService);
   private appointments = inject(AppointmentsService);
-  private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
-  user: LoginResponse | null = null;
+  user = this.auth.currentUser;
+  firstName = computed(() => this.user()?.fullName?.split(' ')[0] ?? '');
   nextAppointment: Appointment | null = null;
   loading = false;
 
-  async ngOnInit() {
-    this.user = await this.auth.getUser();
+  ngOnInit() {
     this.loadNext();
   }
 
-  ionViewWillEnter() { this.loadNext(); }
-
-  firstName() { return this.user?.fullName?.split(' ')[0] ?? ''; }
+  ionViewWillEnter() {
+    this.loadNext();
+  }
 
   loadNext() {
     this.loading = true;
+    this.cdr.markForCheck();
     this.appointments.getMyHistory().subscribe({
       next: (data) => {
         const pending = data
@@ -68,8 +69,12 @@ export class HomePage implements OnInit, ViewWillEnter {
           .sort((a, b) => (a.appointmentDate + a.appointmentTime).localeCompare(b.appointmentDate + b.appointmentTime));
         this.nextAppointment = pending[0] ?? null;
         this.loading = false;
+        this.cdr.markForCheck();
       },
-      error: () => { this.loading = false; },
+      error: () => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
     });
   }
 }

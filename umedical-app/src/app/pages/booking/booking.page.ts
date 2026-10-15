@@ -1,10 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   IonContent, IonHeader, IonToolbar, IonTitle, IonItem, IonLabel,
   IonSelect, IonSelectOption, IonDatetime, IonButton, IonText,
-  IonTextarea, IonSpinner
+  IonTextarea, IonSpinner, ToastController
 } from '@ionic/angular';
 import { AppointmentsService } from '../../core/appointments.service';
 import { Specialty, Doctor, AvailableSlot } from '../../core/models';
@@ -85,6 +85,8 @@ import { Specialty, Doctor, AvailableSlot } from '../../core/models';
 })
 export class BookingPage implements OnInit {
   private appointments = inject(AppointmentsService);
+  private toastCtrl = inject(ToastController);
+  private cdr = inject(ChangeDetectorRef);
 
   specialties: Specialty[] = [];
   doctors: Doctor[] = [];
@@ -104,8 +106,14 @@ export class BookingPage implements OnInit {
 
   ngOnInit() {
     this.appointments.getSpecialties().subscribe({
-      next: (data) => (this.specialties = data),
-      error: () => (this.error = 'No se pudieron cargar las especialidades'),
+      next: (data) => {
+        this.specialties = data;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.error = 'No se pudieron cargar las especialidades';
+        this.cdr.markForCheck();
+      },
     });
   }
 
@@ -115,8 +123,14 @@ export class BookingPage implements OnInit {
     this.resetSlots();
     if (!this.specialtyId) return;
     this.appointments.getDoctors(this.specialtyId).subscribe({
-      next: (data) => (this.doctors = data),
-      error: () => (this.error = 'No se pudieron cargar los médicos'),
+      next: (data) => {
+        this.doctors = data;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.error = 'No se pudieron cargar los médicos';
+        this.cdr.markForCheck();
+      },
     });
   }
 
@@ -126,41 +140,67 @@ export class BookingPage implements OnInit {
   private resetSlots() {
     this.availableSlots = [];
     this.selectedTime = undefined;
+    this.cdr.markForCheck();
   }
 
   private fetchSlots() {
     if (!this.doctorId || !this.selectedDate) return;
     this.loadingSlots = true;
+    this.cdr.markForCheck();
     const date = this.selectedDate.substring(0, 10);
     this.appointments.getAvailableSlots(this.doctorId, date).subscribe({
-      next: (slots) => { this.availableSlots = slots; this.loadingSlots = false; },
-      error: () => { this.error = 'No se pudieron cargar los horarios'; this.loadingSlots = false; },
+      next: (slots) => {
+        this.availableSlots = slots;
+        this.loadingSlots = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.error = 'No se pudieron cargar los horarios';
+        this.loadingSlots = false;
+        this.cdr.markForCheck();
+      },
     });
   }
 
   canSubmit() {
-    return this.doctorId && this.selectedDate && this.selectedTime && this.reason.trim();
+    return Boolean(this.doctorId && this.selectedDate && this.selectedTime && this.reason.trim());
   }
 
   submit() {
     if (!this.canSubmit()) return;
-    this.booking = true; this.error = ''; this.success = '';
+    this.booking = true;
+    this.error = '';
+    this.success = '';
+    this.cdr.markForCheck();
+
     this.appointments.bookAppointment({
       doctorId: this.doctorId!,
       appointmentDate: this.selectedDate!.substring(0, 10),
       appointmentTime: this.selectedTime!,
       reason: this.reason.trim(),
     }).subscribe({
-      next: () => {
+      next: async () => {
         this.booking = false;
-        this.success = 'Cita reservada con éxito';
-        this.doctorId = undefined; this.selectedDate = undefined;
-        this.selectedTime = undefined; this.reason = '';
+        this.success = '¡Cita reservada con éxito!';
+        this.doctorId = undefined;
+        this.selectedDate = undefined;
+        this.selectedTime = undefined;
+        this.reason = '';
         this.resetSlots();
+        this.cdr.markForCheck();
+
+        const toast = await this.toastCtrl.create({
+          message: '¡Cita reservada con éxito!',
+          duration: 3500,
+          color: 'success',
+          position: 'top',
+        });
+        await toast.present();
       },
       error: (e) => {
         this.booking = false;
         this.error = e.error?.message || 'No se pudo reservar la cita';
+        this.cdr.markForCheck();
       },
     });
   }

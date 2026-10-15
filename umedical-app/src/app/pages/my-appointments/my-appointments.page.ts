@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ViewWillEnter } from '@ionic/angular';
@@ -24,7 +24,7 @@ import { Appointment } from '../../core/models';
         <ion-title>Mis citas</ion-title>
       </ion-toolbar>
       <ion-toolbar>
-        <ion-segment [(ngModel)]="segment">
+        <ion-segment [value]="segment" (ionChange)="onSegmentChange($event)">
           <ion-segment-button value="pendientes">
             <ion-label>Pendientes</ion-label>
           </ion-segment-button>
@@ -67,6 +67,7 @@ import { Appointment } from '../../core/models';
 })
 export class MyAppointmentsPage implements ViewWillEnter {
   private appointments = inject(AppointmentsService);
+  private cdr = inject(ChangeDetectorRef);
 
   all: Appointment[] = [];
   segment: 'pendientes' | 'historial' = 'pendientes';
@@ -78,18 +79,27 @@ export class MyAppointmentsPage implements ViewWillEnter {
   load(event?: any) {
     this.loading = !event;
     this.error = '';
+    this.cdr.markForCheck();
+
     this.appointments.getMyHistory().subscribe({
       next: (data) => {
         this.all = data;
         this.loading = false;
         event?.target?.complete();
+        this.cdr.markForCheck();
       },
       error: () => {
         this.error = 'No se pudo cargar tu historial de citas';
         this.loading = false;
         event?.target?.complete();
+        this.cdr.markForCheck();
       },
     });
+  }
+
+  onSegmentChange(event: any) {
+    this.segment = event.detail.value ?? 'pendientes';
+    this.cdr.markForCheck();
   }
 
   filtered() {

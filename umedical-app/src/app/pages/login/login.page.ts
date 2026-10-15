@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IonContent, IonInput, IonButton, IonText, IonSpinner } from '@ionic/angular';
@@ -27,20 +27,30 @@ export class LoginPage {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
-  loading = false; error = '';
+  private cdr = inject(ChangeDetectorRef);
+
+  loading = false;
+  error = '';
   form = this.fb.nonNullable.group({
     username: ['', Validators.required],
     password: ['', Validators.required],
   });
+
   submit() {
-    this.loading = true; this.error = '';
+    this.loading = true;
+    this.error = '';
+    this.cdr.markForCheck();
     const { username, password } = this.form.getRawValue();
     this.auth.login(username, password).subscribe({
-      next: () => this.router.navigateByUrl('/tabs/home', { replaceUrl: true }),
+      next: () => {
+        this.loading = false;
+        this.router.navigateByUrl('/tabs/home', { replaceUrl: true });
+      },
       error: (e) => {
         this.loading = false;
         this.error = e.status === 401 || e.status === 403
           ? 'Usuario o contraseña incorrectos' : e.message || 'No se pudo conectar con el servidor';
+        this.cdr.markForCheck();
       },
     });
   }

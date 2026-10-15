@@ -13,7 +13,9 @@ addIcons({
   'person-outline': personOutline, person,
 });
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { inject, provideAppInitializer } from '@angular/core';
 import { authInterceptor } from './app/core/auth.interceptor';
+import { AuthService } from './app/core/auth.service';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { RouteReuseStrategy, provideRouter, withComponentInputBinding, withPreloading, PreloadAllModules } from '@angular/router';
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular';
@@ -27,5 +29,6 @@ bootstrapApplication(AppComponent, {
     provideIonicAngular(),
     provideRouter(routes, withPreloading(PreloadAllModules), withComponentInputBinding()),
     provideHttpClient(withInterceptors([authInterceptor])),
+    provideAppInitializer(() => inject(AuthService).init()),
   ],
 });
