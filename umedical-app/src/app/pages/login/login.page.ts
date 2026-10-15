@@ -36,7 +36,7 @@ export class LoginPage {
     this.loading = true; this.error = '';
     const { username, password } = this.form.getRawValue();
     this.auth.login(username, password).subscribe({
-      next: () => this.router.navigateByUrl('/booking', { replaceUrl: true }),
+      next: () => this.router.navigateByUrl('/tabs/home', { replaceUrl: true }),
       error: (e) => {
         this.loading = false;
         this.error = e.status === 401 || e.status === 403

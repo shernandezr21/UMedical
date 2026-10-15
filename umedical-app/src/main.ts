@@ -1,3 +1,17 @@
+import { addIcons } from 'ionicons';
+import {
+  homeOutline, home,
+  calendarOutline, calendar,
+  documentTextOutline, documentText,
+  personOutline, person,
+} from 'ionicons/icons';
+
+addIcons({
+  'home-outline': homeOutline, home,
+  'calendar-outline': calendarOutline, calendar,
+  'document-text-outline': documentTextOutline, 'document-text': documentText,
+  'person-outline': personOutline, person,
+});
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { authInterceptor } from './app/core/auth.interceptor';
 import { bootstrapApplication } from '@angular/platform-browser';

@@ -1,2 +1,42 @@
-// For information on how to create your own theme, please refer to:
-// https://ionicframework.com/docs/theming/
+:root {
+  /* === Paleta U-Medical (igual que el panel Angular) === */
+  --ion-color-primary: #1B4B43;
+  --ion-color-primary-rgb: 27, 75, 67;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #18423b;
+  --ion-color-primary-tint: #3D7A6E;
+
+  --ion-background-color: #F6F5F1;
+  --ion-background-color-rgb: 246, 245, 241;
+  --ion-text-color: #1A2420;
+  --ion-text-color-rgb: 26, 36, 32;
+
+  --ion-toolbar-background: #1B4B43;
+  --ion-toolbar-color: #F6F5F1;
+  --ion-item-background: #FFFFFF;
+
+  --ion-font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+
+  /* === Variables propias, mismos nombres que usa el panel Angular === */
+  --color-primary: #1B4B43;
+  --color-primary-light: #3D7A6E;
+  --color-bg: #F6F5F1;
+  --color-surface: #FFFFFF;
+  --color-ink: #1A2420;
+  --color-muted: #6B7A75;
+  --color-border: #DDE3E0;
+
+  --color-pendiente: #C98A2C;
+  --color-pendiente-bg: #FBF1DF;
+  --color-completada: #3D7A4E;
+  --color-completada-bg: #E7F1E8;
+  --color-cancelada: #B4544A;
+  --color-cancelada-bg: #F7E9E7;
+
+  --font-display: 'Source Serif 4', Georgia, serif;
+  --font-body: 'IBM Plex Sans', -apple-system, sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+}

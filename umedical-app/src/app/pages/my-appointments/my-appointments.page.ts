@@ -1,12 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { Router } from '@angular/router';
-import { ViewWillEnter } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
+import { ViewWillEnter } from '@ionic/angular';
 import {
-  IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonContent,
-  IonSegment, IonSegmentButton, IonLabel, IonList, IonItem,
-  IonBadge, IonSpinner, IonText, IonRefresher, IonRefresherContent
+  IonHeader, IonToolbar, IonTitle,
+  IonContent, IonSegment, IonSegmentButton, IonLabel, IonList, IonItem,
+  IonSpinner, IonText, IonRefresher, IonRefresherContent
 } from '@ionic/angular';
 import { AppointmentsService } from '../../core/appointments.service';
 import { Appointment } from '../../core/models';
@@ -15,16 +14,13 @@ import { Appointment } from '../../core/models';
   selector: 'app-my-appointments',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, DatePipe, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
+    CommonModule, FormsModule, DatePipe, IonHeader, IonToolbar, IonTitle,
     IonContent, IonSegment, IonSegmentButton, IonLabel, IonList, IonItem,
-    IonBadge, IonSpinner, IonText, IonRefresher, IonRefresherContent,
+    IonSpinner, IonText, IonRefresher, IonRefresherContent,
   ],
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-button (click)="goBooking()">←</ion-button>
-        </ion-buttons>
         <ion-title>Mis citas</ion-title>
       </ion-toolbar>
       <ion-toolbar>
@@ -57,7 +53,7 @@ import { Appointment } from '../../core/models';
                 <p>{{ a.appointmentDate | date:'fullDate' }} · {{ a.appointmentTime.substring(0,5) }}</p>
                 <p>{{ a.reason }}</p>
               </ion-label>
-              <ion-badge slot="end" [color]="statusColor(a.status)">{{ a.status }}</ion-badge>
+              <span slot="end" class="status-badge" [ngClass]="'status-badge--' + a.status.toLowerCase()">{{ a.status }}</span>
             </ion-item>
           } @empty {
             <ion-text color="medium" class="ion-padding">
@@ -71,7 +67,6 @@ import { Appointment } from '../../core/models';
 })
 export class MyAppointmentsPage implements ViewWillEnter {
   private appointments = inject(AppointmentsService);
-  private router = inject(Router);
 
   all: Appointment[] = [];
   segment: 'pendientes' | 'historial' = 'pendientes';
@@ -102,10 +97,4 @@ export class MyAppointmentsPage implements ViewWillEnter {
       ? this.all.filter((a) => a.status === 'PENDIENTE')
       : this.all.filter((a) => a.status !== 'PENDIENTE');
   }
-
-  statusColor(status: string) {
-    return status === 'PENDIENTE' ? 'warning' : status === 'COMPLETADA' ? 'success' : 'medium';
-  }
-
-  goBooking() { this.router.navigateByUrl('/booking'); }
 }

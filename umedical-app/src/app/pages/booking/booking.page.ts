@@ -1,14 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import {
   IonContent, IonHeader, IonToolbar, IonTitle, IonItem, IonLabel,
   IonSelect, IonSelectOption, IonDatetime, IonButton, IonText,
-  IonTextarea, IonSpinner, IonButtons
+  IonTextarea, IonSpinner
 } from '@ionic/angular';
 import { AppointmentsService } from '../../core/appointments.service';
-import { AuthService } from '../../core/auth.service';
 import { Specialty, Doctor, AvailableSlot } from '../../core/models';
 
 @Component({
@@ -17,16 +15,12 @@ import { Specialty, Doctor, AvailableSlot } from '../../core/models';
   imports: [
     CommonModule, FormsModule, IonContent, IonHeader, IonToolbar, IonTitle,
     IonItem, IonLabel, IonSelect, IonSelectOption, IonDatetime, IonButton,
-    IonText, IonTextarea, IonSpinner, IonButtons,
+    IonText, IonTextarea, IonSpinner,
   ],
   template: `
     <ion-header>
       <ion-toolbar>
         <ion-title>Agendar cita</ion-title>
-        <ion-buttons slot="end">
-          <ion-button (click)="goHistory()">Mis citas</ion-button>
-          <ion-button (click)="logout()">Salir</ion-button>
-        </ion-buttons>
       </ion-toolbar>
     </ion-header>
 
@@ -91,8 +85,6 @@ import { Specialty, Doctor, AvailableSlot } from '../../core/models';
 })
 export class BookingPage implements OnInit {
   private appointments = inject(AppointmentsService);
-  private auth = inject(AuthService);
-  private router = inject(Router);
 
   specialties: Specialty[] = [];
   doctors: Doctor[] = [];
@@ -139,7 +131,7 @@ export class BookingPage implements OnInit {
   private fetchSlots() {
     if (!this.doctorId || !this.selectedDate) return;
     this.loadingSlots = true;
-    const date = this.selectedDate.substring(0, 10); // YYYY-MM-DD
+    const date = this.selectedDate.substring(0, 10);
     this.appointments.getAvailableSlots(this.doctorId, date).subscribe({
       next: (slots) => { this.availableSlots = slots; this.loadingSlots = false; },
       error: () => { this.error = 'No se pudieron cargar los horarios'; this.loadingSlots = false; },
@@ -172,7 +164,4 @@ export class BookingPage implements OnInit {
       },
     });
   }
-
-  goHistory() { this.router.navigateByUrl('/my-appointments'); }
-  logout() { this.auth.logout(); }
 }
