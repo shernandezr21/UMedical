@@ -12,10 +12,13 @@ import java.time.LocalTime;
 import com.umedical.umedical.entity.enumns.AppointmentStatus;
 
 @Entity
-@Table(name = "appointments", uniqueConstraints = {
-        @UniqueConstraint(name = "uq_doctor_datetime",
-                columnNames = {"doctor_id", "appointment_date", "appointment_time"})
-})
+// @Table(name = "appointments", uniqueConstraints = {
+//         @UniqueConstraint(name = "uq_doctor_datetime",
+//                 columnNames = {"doctor_id", "appointment_date", "appointment_time"})
+// })
+@Table(name = "appointments")
+
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -49,6 +52,9 @@ public class Appointment {
 
     @Column(length = 255)
     private String reason;
+
+    @Column(name = "cancellation_reason", length = 255)
+    private String cancellationReason;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

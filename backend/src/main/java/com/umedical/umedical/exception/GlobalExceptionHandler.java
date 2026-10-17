@@ -9,6 +9,11 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import com.umedical.umedical.exception.ConflictException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.List;
 
@@ -18,6 +23,7 @@ import java.util.List;
  * puedan parsear respuestas de error de forma consistente, sin
  * necesidad de try/catch repetido en cada controller.
  */
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -73,5 +79,49 @@ public class GlobalExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error",
                 "Ocurrio un error inesperado: " + ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+    }
+
+        @ExceptionHandler(ForbiddenOperationException.class)
+    public ResponseEntity<ErrorResponse> handleForbiddenOperation(ForbiddenOperationException ex) {
+        ErrorResponse body = new ErrorResponse(
+                HttpStatus.FORBIDDEN.value(), "Forbidden", ex.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ErrorResponse> handleConflict(ConflictException ex) {
+        ErrorResponse body = new ErrorResponse(
+                HttpStatus.CONFLICT.value(), "Conflict", ex.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex) {
+        ErrorResponse body = new ErrorResponse(
+                HttpStatus.CONFLICT.value(), "Conflict",
+                "La operacion entra en conflicto con datos existentes", null);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleUnreadable(HttpMessageNotReadableException ex) {
+        ErrorResponse body = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(), "Bad Request",
+                "El cuerpo de la peticion es invalido (fechas yyyy-MM-dd, horas HH:mm:ss, valores de enumeracion)", null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        ErrorResponse body = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(), "Bad Request", "Parametro invalido: " + ex.getName(), null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> handleMissingParam(MissingServletRequestParameterException ex) {
+        ErrorResponse body = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(), "Bad Request", "Falta el parametro: " + ex.getParameterName(), null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 }

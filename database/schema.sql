@@ -97,10 +97,12 @@ CREATE TABLE appointments (
     status           VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE' COMMENT 'PENDIENTE, COMPLETADA, CANCELADA',
     reason           VARCHAR(255),
     created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    cancellation_reason VARCHAR(255),
+    active_slot      TINYINT GENERATED ALWAYS AS (IF(status = 'CANCELADA', NULL, 1)) STORED,
     CONSTRAINT fk_appointments_patient FOREIGN KEY (patient_id) REFERENCES patients(id),
     CONSTRAINT fk_appointments_doctor FOREIGN KEY (doctor_id) REFERENCES doctors(id),
     CONSTRAINT fk_appointments_schedule FOREIGN KEY (schedule_id) REFERENCES schedules(id),
-    CONSTRAINT uq_doctor_datetime UNIQUE (doctor_id, appointment_date, appointment_time),
+    CONSTRAINT uq_doctor_active_slot UNIQUE (doctor_id, appointment_date, appointment_time, active_slot),
     CONSTRAINT chk_status CHECK (status IN ('PENDIENTE', 'COMPLETADA', 'CANCELADA'))
 ) ENGINE=InnoDB;
 

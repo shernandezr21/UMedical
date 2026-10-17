@@ -4,6 +4,9 @@ import com.umedical.umedical.entity.Document;
 import com.umedical.umedical.exception.ResourceNotFoundException;
 import com.umedical.umedical.repository.DocumentRepository;
 import com.umedical.umedical.security.CustomUserDetails;
+import com.umedical.umedical.exception.ConflictException;
+import com.umedical.umedical.exception.ForbiddenOperationException;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -53,11 +57,11 @@ public class DocumentController {
                 .orElseThrow(() -> new ResourceNotFoundException("Documento no encontrado"));
 
         if (!document.getAppointment().getDoctor().getUser().getId().equals(currentUser.getId())) {
-            throw new IllegalArgumentException("No puedes adjuntar archivos a un documento que no es tuyo");
+            throw new ForbiddenOperationException("No puedes adjuntar archivos a un documento que no es tuyo");
         }
 
         if (document.getFilePath() != null) {
-            throw new IllegalArgumentException("Este documento ya tiene un PDF adjunto");
+            throw new ConflictException("Este documento ya tiene un PDF adjunto");
         }
 
         if (!MediaType.APPLICATION_PDF_VALUE.equals(file.getContentType())) {
@@ -91,7 +95,7 @@ public class DocumentController {
         boolean esPacienteDueno = document.getAppointment().getPatient().getUser().getId().equals(currentUser.getId());
 
         if (!esDoctorDueno && !esPacienteDueno) {
-            throw new IllegalArgumentException("No tienes acceso a este archivo");
+            throw new ForbiddenOperationException("No tienes acceso a este archivo");
         }
 
         if (document.getFilePath() == null) {
