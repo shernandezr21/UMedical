@@ -286,6 +286,21 @@ export class MyAgenda {
       CANCELADA: 'badge badge-cancelada'
     }[status] ?? 'badge';
   }
+
+  isFuture(appt: AppointmentResponse): boolean {
+    return appt.appointmentDate > this.toIso(new Date());
+  }
+
+  goToToday(): void {
+    const today = new Date();
+    this.weekStart.set(this.mondayOf(today));
+    this.selectedDate.set(this.toIso(today));
+    this.openDiagnosisId.set(null);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+    this.loadWeek();
+  }
+  
 }
 
 // import { Component, computed, inject, signal } from '@angular/core';

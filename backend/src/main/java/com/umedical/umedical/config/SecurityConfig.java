@@ -111,6 +111,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/documents/*/file").hasAnyAuthority(
                                 "ROLE_DOCTOR", "ROLE_PATIENT")
 
+                        // Perfil del paciente y cambio de contrasena
+                        .requestMatchers(HttpMethod.GET, "/api/v1/patients/me").hasAuthority("ROLE_PATIENT")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/patients/me").hasAuthority("ROLE_PATIENT")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/users/me/password").authenticated()
+
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

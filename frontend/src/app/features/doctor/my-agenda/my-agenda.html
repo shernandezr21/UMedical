@@ -12,7 +12,10 @@
 
 <div class="calendar-nav">
   <button type="button" class="btn btn-secondary" (click)="previousWeek()">&larr; Semana anterior</button>
-  <span class="calendar-nav__label">{{ weekRangeLabel() }}</span>
+  <div style="display: flex; align-items: center; gap: 0.75rem;">
+    <span class="calendar-nav__label">{{ weekRangeLabel() }}</span>
+    <button type="button" class="btn btn-secondary" (click)="goToToday()">Hoy</button>
+  </div>
   <button type="button" class="btn btn-secondary" (click)="nextWeek()">Semana siguiente &rarr;</button>
 </div>
 
@@ -56,9 +59,15 @@
       </div>
 
       @if (appt.status !== 'CANCELADA') {
-        <button type="button" class="btn btn-secondary" style="margin-top: 1rem;" (click)="toggleDiagnosis(appt.id)">
-          {{ openDiagnosisId() === appt.id ? 'Cerrar' : 'Ver / registrar diagnostico y receta' }}
-        </button>
+        @if (isFuture(appt)) {
+          <p style="color: var(--color-muted); font-size: 0.85rem; margin-top: 1rem;">
+            Podras registrar diagnostico y receta a partir del {{ appt.appointmentDate }}.
+          </p>
+        } @else {
+          <button type="button" class="btn btn-secondary" style="margin-top: 1rem;" (click)="toggleDiagnosis(appt.id)">
+            {{ openDiagnosisId() === appt.id ? 'Cerrar' : 'Ver / registrar diagnostico y receta' }}
+          </button>
+        }
       }
 
       @if (openDiagnosisId() === appt.id) {

@@ -173,6 +173,8 @@ public class AppointmentService {
         return toResponse(appointmentRepository.save(appointment));
     }
 
+    
+
     // ------------------------------------------------------------------ Doctor
 
     public List<AppointmentResponse> getMyAgenda(Long doctorUserId, LocalDate date) {
@@ -201,6 +203,11 @@ public class AppointmentService {
 
         if (appointment.getStatus() == AppointmentStatus.CANCELADA) {
             throw new ConflictException("No se pueden registrar documentos en una cita cancelada");
+        }
+
+        if (appointment.getAppointmentDate().isAfter(LocalDate.now(clock))) {
+            throw new ConflictException("No se pueden registrar documentos en una cita que aun no ocurre ("
+                    + appointment.getAppointmentDate() + ")");
         }
 
         Document document = new Document();
