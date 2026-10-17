@@ -34,7 +34,8 @@
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
-/* @import '@ionic/angular/css/palettes/dark.system.css';
+/* @import '@ionic/angular/css/palettes/dark.system.css'; */
+
 /* === Tipografía editorial, igual que el panel Angular === */
 h1, h2, h3,
 ion-title {
@@ -45,9 +46,6 @@ ion-title {
 ion-card-title {
   font-family: var(--font-display);
 }
-
-/* === Desactivar modo oscuro automático: el panel Angular no tiene dark mode === */
-/* (ya comentamos la import de dark.system.css en el paso siguiente) */
 
 /* === Utilidades reutilizables === */
 .card {
@@ -75,3 +73,15 @@ ion-card-title {
 .status-badge--pendiente { background: var(--color-pendiente-bg); color: var(--color-pendiente); }
 .status-badge--completada { background: var(--color-completada-bg); color: var(--color-completada); }
 .status-badge--cancelada { background: var(--color-cancelada-bg); color: var(--color-cancelada); }
+
+/* === Segment de Mis Citas: texto legible siempre === */
+ion-segment {
+  --background: var(--color-surface);
+}
+ion-segment-button {
+  --color: var(--color-muted);
+  --color-checked: var(--color-primary);
+  --indicator-color: var(--color-primary);
+  font-weight: 500;
+  text-transform: none;
+}

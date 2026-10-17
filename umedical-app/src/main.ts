@@ -4,6 +4,11 @@ import {
   calendarOutline, calendar,
   documentTextOutline, documentText,
   personOutline, person,
+  timeOutline,
+  checkmarkCircleOutline,
+  eyeOutline, eyeOffOutline,
+  lockClosedOutline,
+  medicalOutline,
 } from 'ionicons/icons';
 
 addIcons({
@@ -11,11 +16,15 @@ addIcons({
   'calendar-outline': calendarOutline, calendar,
   'document-text-outline': documentTextOutline, 'document-text': documentText,
   'person-outline': personOutline, person,
+  'time-outline': timeOutline,
+  'checkmark-circle-outline': checkmarkCircleOutline,
+  'eye-outline': eyeOutline, 'eye-off-outline': eyeOffOutline,
+  'lock-closed-outline': lockClosedOutline,
+  'medical-outline': medicalOutline,
 });
+
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { inject, provideAppInitializer } from '@angular/core';
 import { authInterceptor } from './app/core/auth.interceptor';
-import { AuthService } from './app/core/auth.service';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { RouteReuseStrategy, provideRouter, withComponentInputBinding, withPreloading, PreloadAllModules } from '@angular/router';
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular';
@@ -29,6 +38,5 @@ bootstrapApplication(AppComponent, {
     provideIonicAngular(),
     provideRouter(routes, withPreloading(PreloadAllModules), withComponentInputBinding()),
     provideHttpClient(withInterceptors([authInterceptor])),
-    provideAppInitializer(() => inject(AuthService).init()),
   ],
 });
