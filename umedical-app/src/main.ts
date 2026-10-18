@@ -9,6 +9,14 @@ import {
   eyeOutline, eyeOffOutline,
   lockClosedOutline,
   medicalOutline,
+  closeOutline,
+  informationCircleOutline,
+  swapHorizontalOutline,
+  trashOutline,
+  logOutOutline,
+  heartOutline,
+  bodyOutline,
+  happyOutline,
 } from 'ionicons/icons';
 
 addIcons({
@@ -21,6 +29,14 @@ addIcons({
   'eye-outline': eyeOutline, 'eye-off-outline': eyeOffOutline,
   'lock-closed-outline': lockClosedOutline,
   'medical-outline': medicalOutline,
+  'close-outline': closeOutline,
+  'information-circle-outline': informationCircleOutline,
+  'swap-horizontal-outline': swapHorizontalOutline,
+  'trash-outline': trashOutline,
+  'log-out-outline': logOutOutline,
+  'heart-outline': heartOutline,
+  'body-outline': bodyOutline,
+  'happy-outline': happyOutline,
 });
 
 import { provideHttpClient, withInterceptors } from '@angular/common/http';

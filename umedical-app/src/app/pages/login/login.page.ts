@@ -1,13 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { IonContent, IonInput, IonButton, IonIcon, IonSpinner } from '@ionic/angular';
 import { AuthService } from '../../core/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, IonContent, IonInput, IonButton, IonIcon, IonSpinner],
+  imports: [ReactiveFormsModule, RouterLink, IonContent, IonInput, IonButton, IonIcon, IonSpinner],
   template: `
     <ion-content class="login-content" [fullscreen]="true">
       <div class="login-wrap">
@@ -50,7 +50,7 @@ import { AuthService } from '../../core/auth.service';
           </ion-button>
         </form>
 
-        <p class="login-footer">Acceso exclusivo para pacientes</p>
+        <p class="login-footer">¿No tienes cuenta? <a routerLink="/register">Regístrate</a></p>
       </div>
     </ion-content>
   `,
@@ -150,6 +150,7 @@ import { AuthService } from '../../core/auth.service';
       color: var(--color-muted);
       margin-top: 1.8rem;
     }
+    .login-footer a { color: var(--color-primary); font-weight: 600; text-decoration: none; }
   `],
 })
 export class LoginPage {

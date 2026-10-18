@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ViewWillEnter } from '@ionic/angular';
+import { ViewWillEnter, ModalController } from '@ionic/angular';
 import {
   IonHeader, IonToolbar, IonTitle,
   IonContent, IonSegment, IonSegmentButton, IonLabel,
@@ -10,6 +10,7 @@ import {
 import { AppointmentsService } from '../../core/appointments.service';
 import { Appointment } from '../../core/models';
 import { initials, avatarColor } from '../../core/avatar.util';
+import { AppointmentDetailModal } from './appointment-detail.modal';
 
 @Component({
   selector: 'app-my-appointments',
@@ -45,7 +46,7 @@ import { initials, avatarColor } from '../../core/avatar.util';
         <ion-text color="danger" class="ion-padding"><p>{{ error() }}</p></ion-text>
       } @else {
         @for (a of filtered(); track a.id) {
-          <div class="appt-card" [ngClass]="'appt-card--' + a.status.toLowerCase()">
+          <div class="appt-card" [ngClass]="'appt-card--' + a.status.toLowerCase()" (click)="openDetail(a)">
             <div class="appt-card__top">
               <div class="appt-card__doctor-row">
                 <span class="avatar" [style.background]="avatarColor(a.doctorName)">{{ initials(a.doctorName) }}</span>
@@ -96,6 +97,7 @@ import { initials, avatarColor } from '../../core/avatar.util';
       border-radius: var(--radius-md);
       padding: 1rem 1.1rem;
       margin-bottom: 0.85rem;
+      cursor: pointer;
     }
     .appt-card--pendiente { border-left-color: var(--color-pendiente); }
     .appt-card--completada { border-left-color: var(--color-completada); }
@@ -186,6 +188,7 @@ import { initials, avatarColor } from '../../core/avatar.util';
 })
 export class MyAppointmentsPage implements ViewWillEnter {
   private appointments = inject(AppointmentsService);
+  private modalCtrl = inject(ModalController);
 
   all = signal<Appointment[]>([]);
   segment: 'pendientes' | 'historial' = 'pendientes';
@@ -219,4 +222,14 @@ export class MyAppointmentsPage implements ViewWillEnter {
       ? this.all().filter((a) => a.status === 'PENDIENTE')
       : this.all().filter((a) => a.status !== 'PENDIENTE');
   }
+
+async openDetail(appointment: Appointment) {
+  const modal = await this.modalCtrl.create({
+    component: AppointmentDetailModal,
+    componentProps: { appointment },
+  });
+  await modal.present();
+  const { data } = await modal.onWillDismiss();
+  if (data?.refreshed) this.load();
+}
 }

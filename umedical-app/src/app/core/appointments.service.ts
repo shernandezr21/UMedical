@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { AppointmentRequest, Appointment, AvailableSlot, Doctor, Specialty } from './models';
+import { AppointmentRequest, Appointment, AvailableSlot, Doctor, Specialty, DocumentResponse, RescheduleRequest, CancelRequest } from './models';
 
 @Injectable({ providedIn: 'root' })
 export class AppointmentsService {
@@ -24,5 +24,17 @@ export class AppointmentsService {
   }
   getMyHistory() {
     return this.http.get<Appointment[]>(`${this.base}/appointments/my-history`);
+  }
+  rescheduleAppointment(id: number, req: RescheduleRequest) {
+    return this.http.put<Appointment>(`${this.base}/appointments/${id}/reschedule`, req);
+  }
+  cancelAppointment(id: number, req?: CancelRequest) {
+    return this.http.post<Appointment>(`${this.base}/appointments/${id}/cancel`, req ?? {});
+  }
+  getDocuments(appointmentId: number) {
+    return this.http.get<DocumentResponse[]>(`${this.base}/appointments/${appointmentId}/documents`);
+  }
+  getDocumentFile(documentId: number) {
+    return this.http.get(`${this.base}/documents/${documentId}/file`, { responseType: 'blob' });
   }
 }

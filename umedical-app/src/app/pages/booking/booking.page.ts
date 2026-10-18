@@ -9,6 +9,7 @@ import {
 import { AppointmentsService } from '../../core/appointments.service';
 import { Specialty, Doctor, AvailableSlot } from '../../core/models';
 import { initials, avatarColor } from '../../core/avatar.util';
+import { specialtyIcon } from '../../core/specialty-icon.util';
 
 @Component({
   selector: 'app-booking',
@@ -24,14 +25,22 @@ import { initials, avatarColor } from '../../core/avatar.util';
     </ion-header>
 
     <ion-content class="ion-padding">
-      <ion-item>
-        <ion-label>Especialidad</ion-label>
-        <ion-select [(ngModel)]="specialtyId" (ionChange)="onSpecialtyChange()" interface="action-sheet">
+      <p class="section-label">Especialidad</p>
+      @if (specialties().length) {
+        <div class="specialty-grid">
           @for (s of specialties(); track s.id) {
-            <ion-select-option [value]="s.id">{{ s.name }}</ion-select-option>
+            <button type="button" class="specialty-card" [class.specialty-card--selected]="specialtyId === s.id"
+                    (click)="selectSpecialty(s.id)">
+              <span class="specialty-card__icon">
+                <ion-icon [name]="specialtyIcon(s.name)"></ion-icon>
+              </span>
+              <span class="specialty-card__name">{{ s.name }}</span>
+            </button>
           }
-        </ion-select>
-      </ion-item>
+        </div>
+      } @else {
+        <ion-spinner name="dots"></ion-spinner>
+      }
 
       @if (specialtyId) {
         <p class="section-label">Médico</p>
@@ -103,7 +112,47 @@ import { initials, avatarColor } from '../../core/avatar.util';
       color: var(--color-muted);
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      margin: 1.1rem 0 0.5rem;
+      margin: 0 0 0.5rem;
+    }
+    .section-label:not(:first-child) { margin-top: 1.1rem; }
+
+    .specialty-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+    }
+    .specialty-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1rem 0.6rem;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .specialty-card--selected {
+      border-color: var(--color-primary);
+      background: var(--color-pendiente-bg);
+    }
+    .specialty-card__icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--color-primary);
+      color: #fff;
+      font-size: 1.3rem;
+    }
+    .specialty-card__name {
+      font-family: var(--font-display);
+      font-size: 0.92rem;
+      color: var(--color-ink);
+      text-align: center;
     }
 
     .doctor-list {
@@ -188,6 +237,7 @@ export class BookingPage implements OnInit {
 
   initials = initials;
   avatarColor = avatarColor;
+  specialtyIcon = specialtyIcon;
 
   ngOnInit() {
     this.appointments.getSpecialties().subscribe({
@@ -196,33 +246,33 @@ export class BookingPage implements OnInit {
     });
   }
 
-  onSpecialtyChange() {
+  selectSpecialty(id: number) {
+    this.specialtyId = id;
     this.doctorId = undefined;
     this.doctors.set([]);
-    this.resetSlots();
-    if (!this.specialtyId) return;
-    this.appointments.getDoctors(this.specialtyId).subscribe({
+    this.resetDateAndSlots();
+    this.appointments.getDoctors(id).subscribe({
       next: (data) => this.doctors.set(data),
       error: () => this.loadError.set('No se pudieron cargar los médicos'),
     });
   }
 
-selectDoctor(id: number) {
-  this.doctorId = id;
-  this.resetDateAndSlots();
-}
+  selectDoctor(id: number) {
+    this.doctorId = id;
+    this.resetDateAndSlots();
+  }
 
-onDateChange() { this.resetSlots(); this.fetchSlots(); }
+  onDateChange() { this.resetSlots(); this.fetchSlots(); }
 
-private resetDateAndSlots() {
-  this.selectedDate = undefined;
-  this.resetSlots();
-}
+  private resetDateAndSlots() {
+    this.selectedDate = undefined;
+    this.resetSlots();
+  }
 
-private resetSlots() {
-  this.availableSlots.set([]);
-  this.selectedTime = undefined;
-}
+  private resetSlots() {
+    this.availableSlots.set([]);
+    this.selectedTime = undefined;
+  }
 
   private fetchSlots() {
     if (!this.doctorId || !this.selectedDate) return;

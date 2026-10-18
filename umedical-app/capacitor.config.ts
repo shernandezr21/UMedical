@@ -5,7 +5,8 @@ const config: CapacitorConfig = {
   appName: 'U-Medical',
   webDir: 'www',
   server: {
-    cleartext: true, // permite HTTP plano mientras desarrollas (sin esto, Android bloquea http://)
+    androidScheme: 'http',
+    cleartext: true,
   },
 };
 
