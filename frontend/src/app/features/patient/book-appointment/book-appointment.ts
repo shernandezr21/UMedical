@@ -2,9 +2,12 @@ import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AppointmentResponse } from '../../../core/models/appointment.model';
 import { DoctorResponse } from '../../../core/models/doctor.model';
+import { PatientSummary } from '../../../core/models/patient.model';
 import { Specialty } from '../../../core/models/specialty.model';
 import { AppointmentService } from '../../../core/services/appointment.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { DoctorService } from '../../../core/services/doctor.service';
+import { PatientService } from '../../../core/services/patient.service';
 import { SpecialtyService } from '../../../core/services/specialty.service';
 import { SelectedSlot, SlotPicker } from '../../../shared/slot-picker/slot-picker';
 
@@ -18,9 +21,17 @@ export class BookAppointment {
   private doctorService = inject(DoctorService);
   private specialtyService = inject(SpecialtyService);
   private appointmentService = inject(AppointmentService);
+  private patientService = inject(PatientService);
+  private authService = inject(AuthService);
   private route = inject(ActivatedRoute);
 
+  /** Secretaria o admin: agendan a nombre de un paciente que llega en ?patientId= */
+  readonly isStaff = ['ROLE_ADMIN', 'ROLE_SECRETARY'].includes(this.authService.getRole() ?? '');
+
   slotPicker = viewChild(SlotPicker);
+
+  patientId = signal<number | null>(null);
+  patient = signal<PatientSummary | null>(null);
 
   specialties = signal<Specialty[]>([]);
   doctors = signal<DoctorResponse[]>([]);
@@ -40,13 +51,25 @@ export class BookAppointment {
   selectedDoctor = computed(() => this.doctors().find((d) => d.id === this.selectedDoctorId()) ?? null);
 
   constructor() {
-    const preselected = Number(this.route.snapshot.queryParamMap.get('doctorId'));
+    const params = this.route.snapshot.queryParamMap;
+    const preselectedDoctor = Number(params.get('doctorId'));
+
+    if (this.isStaff) {
+      const patientId = Number(params.get('patientId'));
+      if (patientId) {
+        this.patientId.set(patientId);
+        this.patientService.getById(patientId).subscribe({
+          next: (patient) => this.patient.set(patient),
+          error: () => this.errorMessage.set('No se encontro al paciente.')
+        });
+      }
+    }
 
     this.specialtyService.getSpecialties().subscribe((data) => this.specialties.set(data));
     this.doctorService.getDoctors().subscribe((data) => {
       this.doctors.set(data);
       // Si llegaron desde el directorio con ?doctorId=, dejar ese medico ya elegido
-      const doctor = preselected ? data.find((d) => d.id === preselected) : undefined;
+      const doctor = preselectedDoctor ? data.find((d) => d.id === preselectedDoctor) : undefined;
       if (doctor) {
         this.specialtyFilter.set(doctor.specialty);
         this.selectedDoctorId.set(doctor.id);
@@ -86,6 +109,7 @@ export class BookAppointment {
 
     this.appointmentService.createAppointment({
       doctorId: doctor.id,
+      patientId: this.isStaff ? this.patientId() ?? undefined : undefined,
       appointmentDate: slot.date,
       appointmentTime: slot.time,
       reason: this.reason().trim() || undefined

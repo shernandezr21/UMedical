@@ -3,33 +3,45 @@ package com.umedical.umedical.service;
 import com.umedical.umedical.dto.ScheduleBlockRequest;
 import com.umedical.umedical.dto.ScheduleRequest;
 import com.umedical.umedical.dto.ScheduleResponse;
+import com.umedical.umedical.entity.Appointment;
 import com.umedical.umedical.entity.Doctor;
 import com.umedical.umedical.entity.Schedule;
+import com.umedical.umedical.entity.enumns.AppointmentStatus;
+import com.umedical.umedical.exception.ConflictException;
 import com.umedical.umedical.exception.ResourceNotFoundException;
+import com.umedical.umedical.repository.AppointmentRepository;
 import com.umedical.umedical.repository.DoctorRepository;
 import com.umedical.umedical.repository.ScheduleRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
 /**
- * Reglas de los bloques de horario: la hora de fin debe ser posterior a la
- * de inicio, el slot debe caber dentro del bloque, y dos bloques activos del
- * mismo medico no pueden cruzarse el mismo dia (si se cruzaran, el motor de
- * disponibilidad generaria slots duplicados).
+ * Reglas de los bloques de horario: la hora de fin debe ser posterior a la de inicio, el slot debe caber
+ * dentro del bloque, dos bloques activos del mismo medico no pueden cruzarse el mismo dia, y no se puede
+ * editar ni eliminar un bloque si eso dejaria sin horario a una cita pendiente.
  */
 @Service
 public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
     private final DoctorRepository doctorRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final Clock clock;
 
-    public ScheduleService(ScheduleRepository scheduleRepository, DoctorRepository doctorRepository) {
+    public ScheduleService(ScheduleRepository scheduleRepository,
+                           DoctorRepository doctorRepository,
+                           AppointmentRepository appointmentRepository,
+                           Clock clock) {
         this.scheduleRepository = scheduleRepository;
         this.doctorRepository = doctorRepository;
+        this.appointmentRepository = appointmentRepository;
+        this.clock = clock;
     }
 
     @Transactional
@@ -48,6 +60,48 @@ public class ScheduleService {
         }
 
         return toResponse(saveBlock(doctor, request));
+    }
+
+    @Transactional
+    public ScheduleResponse updateSchedule(Long scheduleId, ScheduleBlockRequest request) {
+        Schedule schedule = findActive(scheduleId);
+        validateBlock(request);
+
+        for (Schedule other : scheduleRepository.findByDoctorIdAndActiveTrue(schedule.getDoctor().getId())) {
+            if (!other.getId().equals(scheduleId)
+                    && other.getDayOfWeek().equals(request.getDayOfWeek())
+                    && overlaps(other.getStartTime(), other.getEndTime(),
+                                request.getStartTime(), request.getEndTime())) {
+                throw new IllegalArgumentException("El bloque se cruza con otro horario de este medico");
+            }
+        }
+
+        long orphaned = countOrphanedAppointments(schedule, request);
+        if (orphaned > 0) {
+            throw new ConflictException("Hay " + orphaned + " cita(s) pendiente(s) en este horario que quedarian "
+                    + "fuera del nuevo bloque. Reagendalas o cancelalas primero");
+        }
+
+        schedule.setDayOfWeek(request.getDayOfWeek());
+        schedule.setStartTime(request.getStartTime());
+        schedule.setEndTime(request.getEndTime());
+        schedule.setSlotDurationMinutes(request.getSlotDurationMinutes());
+        return toResponse(scheduleRepository.save(schedule));
+    }
+
+    /** Elimina el bloque (baja logica: queda inactivo). */
+    @Transactional
+    public void deactivateSchedule(Long scheduleId) {
+        Schedule schedule = findActive(scheduleId);
+
+        long orphaned = countOrphanedAppointments(schedule, null);
+        if (orphaned > 0) {
+            throw new ConflictException("Hay " + orphaned + " cita(s) pendiente(s) en este horario. "
+                    + "Reagendalas o cancelalas antes de eliminarlo");
+        }
+
+        schedule.setActive(false);
+        scheduleRepository.save(schedule);
     }
 
     /** Valida una lista de bloques ANTES de escribir nada en la base. */
@@ -84,6 +138,35 @@ public class ScheduleService {
                 .toList();
     }
 
+    // ------------------------------------------------------------------ Privados
+
+    private Schedule findActive(Long id) {
+        return scheduleRepository.findById(id)
+                .filter(Schedule::isActive)
+                .orElseThrow(() -> new ResourceNotFoundException("Horario no encontrado"));
+    }
+
+    /**
+     * Citas pendientes desde hoy que estan dentro del bloque actual y quedarian fuera del reemplazo
+     * (o de cualquier bloque, si se elimina: replacement == null).
+     */
+    private long countOrphanedAppointments(Schedule current, ScheduleBlockRequest replacement) {
+        Long doctorId = current.getDoctor().getId();
+
+        return appointmentRepository.findByDoctorIdAndStatusAndAppointmentDateGreaterThanEqual(
+                        doctorId, AppointmentStatus.PENDIENTE, LocalDate.now(clock)).stream()
+                .filter(a -> isInside(a, current.getDayOfWeek(), current.getStartTime(), current.getEndTime()))
+                .filter(a -> replacement == null
+                        || !isInside(a, replacement.getDayOfWeek(), replacement.getStartTime(), replacement.getEndTime()))
+                .count();
+    }
+
+    private boolean isInside(Appointment appointment, Integer dayOfWeek, LocalTime start, LocalTime end) {
+        return appointment.getAppointmentDate().getDayOfWeek().getValue() == dayOfWeek
+                && !appointment.getAppointmentTime().isBefore(start)
+                && appointment.getAppointmentTime().isBefore(end);
+    }
+
     private void validateBlock(ScheduleBlockRequest block) {
         if (!block.getEndTime().isAfter(block.getStartTime())) {
             throw new IllegalArgumentException("La hora de fin debe ser posterior a la hora de inicio");
@@ -104,61 +187,3 @@ public class ScheduleService {
                 s.getStartTime(), s.getEndTime(), s.getSlotDurationMinutes(), s.isActive());
     }
 }
-
-// package com.umedical.umedical.service;
-
-// import com.umedical.umedical.dto.ScheduleRequest;
-// import com.umedical.umedical.dto.ScheduleResponse;
-// import com.umedical.umedical.entity.Doctor;
-// import com.umedical.umedical.entity.Schedule;
-// import com.umedical.umedical.exception.ResourceNotFoundException;
-// import com.umedical.umedical.repository.DoctorRepository;
-// import com.umedical.umedical.repository.ScheduleRepository;
-// import org.springframework.stereotype.Service;
-
-// import java.util.List;
-
-// @Service
-// public class ScheduleService {
-
-//     private final ScheduleRepository scheduleRepository;
-//     private final DoctorRepository doctorRepository;
-
-//     public ScheduleService(ScheduleRepository scheduleRepository, DoctorRepository doctorRepository) {
-//         this.scheduleRepository = scheduleRepository;
-//         this.doctorRepository = doctorRepository;
-//     }
-
-//     public ScheduleResponse createSchedule(ScheduleRequest request) {
-
-//         Doctor doctor = doctorRepository.findById(request.getDoctorId())
-//                 .orElseThrow(() -> new ResourceNotFoundException("Medico no encontrado"));
-
-//         if (!request.getEndTime().isAfter(request.getStartTime())) {
-//             throw new IllegalArgumentException("La hora de fin debe ser posterior a la hora de inicio");
-//         }
-
-//         Schedule schedule = new Schedule();
-//         schedule.setDoctor(doctor);
-//         schedule.setDayOfWeek(request.getDayOfWeek());
-//         schedule.setStartTime(request.getStartTime());
-//         schedule.setEndTime(request.getEndTime());
-//         schedule.setSlotDurationMinutes(request.getSlotDurationMinutes());
-//         schedule.setActive(true);
-//         schedule = scheduleRepository.save(schedule);
-
-//         return toResponse(schedule);
-//     }
-
-//     public List<ScheduleResponse> getSchedulesByDoctor(Long doctorId) {
-//         return scheduleRepository.findByDoctorIdAndActiveTrue(doctorId).stream()
-//                 .map(this::toResponse)
-//                 .toList();
-//     }
-
-//     private ScheduleResponse toResponse(Schedule s) {
-//         return new ScheduleResponse(
-//                 s.getId(), s.getDoctor().getId(), s.getDayOfWeek(),
-//                 s.getStartTime(), s.getEndTime(), s.getSlotDurationMinutes(), s.isActive());
-//     }
-// }

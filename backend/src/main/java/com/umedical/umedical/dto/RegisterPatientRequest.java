@@ -54,6 +54,12 @@ public class RegisterPatientRequest {
     @Pattern(regexp = "^(A|B|AB|O)[+-]$", message = "Tipo de sangre invalido (ej. O+, A-, AB+)")
     private String bloodType;
 
+    @Schema(description = "Token de Cloudflare Turnstile. Solo se exige si el servidor tiene el captcha activado.")
+    private String captchaToken;
+
+    public String getCaptchaToken() { return captchaToken; }
+    public void setCaptchaToken(String captchaToken) { this.captchaToken = captchaToken; }
+
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
     public String getEmail() { return email; }

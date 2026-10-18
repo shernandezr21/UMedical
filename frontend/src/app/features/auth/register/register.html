@@ -87,6 +87,12 @@
         </label>
       </div>
 
+      @if (captchaSiteKey) {
+        <div style="margin-bottom: 1rem;">
+          <app-captcha [siteKey]="captchaSiteKey" (tokenChange)="captchaToken.set($event)" />
+        </div>
+      }
+
       <button type="submit" class="login-form__submit" [disabled]="isLoading()">
         {{ isLoading() ? 'Creando cuenta...' : 'Crear cuenta' }}
       </button>

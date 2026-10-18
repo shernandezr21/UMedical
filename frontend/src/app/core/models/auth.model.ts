@@ -22,6 +22,7 @@ export interface RegisterRequest {
   birthDate?: string;
   address?: string;
   bloodType?: string;
+  captchaToken?: string;
 }
 
 export interface ChangePasswordRequest {

@@ -1,0 +1,213 @@
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+  <div>
+    <h2 class="page-title">Usuarios</h2>
+    <p class="page-subtitle">Cuentas del sistema: administradores, secretarias, medicos y pacientes.</p>
+  </div>
+  <button type="button" class="btn btn-primary" (click)="toggleForm()">
+    {{ showForm() ? 'Cerrar' : 'Nuevo usuario' }}
+  </button>
+</div>
+
+@if (errorMessage()) {
+  <div class="alert alert-error">{{ errorMessage() }}</div>
+}
+@if (successMessage()) {
+  <div class="alert alert-success">{{ successMessage() }}</div>
+}
+
+@if (credentials(); as c) {
+  <div class="card" style="margin-bottom: 1.5rem; border-color: var(--color-completada);">
+    <div class="alert alert-success" style="margin-bottom: 1rem;">{{ c.title }}</div>
+    <p>Usuario: <strong>{{ c.username }}</strong></p>
+    <p style="margin-top: 0.3rem;">Contrasena temporal: <strong style="font-family: monospace;">{{ c.password }}</strong></p>
+    <p class="muted" style="margin-top: 0.6rem;">
+      Se muestra una sola vez. Entregasela a la persona; puede cambiarla despues desde su perfil.
+    </p>
+    <div style="display: flex; gap: 0.6rem; margin-top: 1rem;">
+      <button type="button" class="btn btn-secondary" (click)="copyCredentials()">
+        {{ copied() ? 'Copiado' : 'Copiar usuario y contrasena' }}
+      </button>
+      <button type="button" class="btn btn-secondary" (click)="dismissCredentials()">Cerrar aviso</button>
+    </div>
+  </div>
+}
+
+@if (showForm()) {
+  <div class="card" style="margin-bottom: 1.5rem;">
+    <h3 style="font-size: 1.1rem; margin-bottom: 0.3rem;">Nuevo usuario</h3>
+    <p class="muted" style="margin-bottom: 1.1rem;">
+      Los medicos se crean desde <a routerLink="/dashboard/doctores">Medicos</a>, porque llevan especialidad, colegiado y horarios.
+    </p>
+
+    @if (formError()) {
+      <div class="alert alert-error">{{ formError() }}</div>
+    }
+
+    <form [formGroup]="createForm" (ngSubmit)="createUser()" novalidate>
+      <label class="field" style="max-width: 280px;">
+        <span>Rol</span>
+        <select formControlName="role">
+          @for (r of creatableRoles; track r.value) {
+            <option [value]="r.value">{{ r.label }}</option>
+          }
+        </select>
+      </label>
+
+      <div class="field-row">
+        <label class="field" [class.field--error]="createError('firstName')">
+          <span>Nombre *</span>
+          <input type="text" formControlName="firstName" />
+          @if (createError('firstName'); as msg) { <p class="field__hint">{{ msg }}</p> }
+        </label>
+        <label class="field" [class.field--error]="createError('lastName')">
+          <span>Apellido *</span>
+          <input type="text" formControlName="lastName" />
+          @if (createError('lastName'); as msg) { <p class="field__hint">{{ msg }}</p> }
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label class="field" [class.field--error]="createError('email')">
+          <span>Correo electronico *</span>
+          <input type="email" formControlName="email" />
+          @if (createError('email'); as msg) { <p class="field__hint">{{ msg }}</p> }
+        </label>
+        <label class="field" [class.field--error]="createError('phone')">
+          <span>Telefono</span>
+          <input type="text" formControlName="phone" />
+          @if (createError('phone'); as msg) { <p class="field__hint">{{ msg }}</p> }
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label class="field" [class.field--error]="createForm.controls.username.invalid && createForm.controls.username.touched">
+          <span>Usuario (opcional: si lo dejas vacio se genera del correo)</span>
+          <input type="text" formControlName="username" />
+          @if (createForm.controls.username.invalid && createForm.controls.username.touched) {
+            <p class="field__hint">De 4 a 50 caracteres: letras, numeros, punto, guion y guion bajo.</p>
+          }
+        </label>
+        <label class="field" [class.field--error]="createForm.controls.password.invalid && createForm.controls.password.touched">
+          <span>Contrasena (opcional: si la dejas vacia se genera una temporal)</span>
+          <input type="password" formControlName="password" autocomplete="new-password" />
+          @if (createForm.controls.password.invalid && createForm.controls.password.touched) {
+            <p class="field__hint">De 8 a 72 caracteres, o dejala vacia.</p>
+          }
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="isSaving()">
+        {{ isSaving() ? 'Creando...' : 'Crear usuario' }}
+      </button>
+    </form>
+  </div>
+}
+
+<div class="field-row" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.5rem;">
+  <label class="field">
+    <span>Buscar por nombre, usuario o correo</span>
+    <input type="search" (input)="onSearchInput($event)" />
+  </label>
+  <label class="field">
+    <span>Rol</span>
+    <select (change)="onRoleFilter($event)">
+      <option value="">Todos</option>
+      @for (r of filterRoles; track r.value) {
+        <option [value]="r.value">{{ r.label }}</option>
+      }
+    </select>
+  </label>
+  <label class="field">
+    <span>Estado</span>
+    <select (change)="onActiveFilter($event)">
+      <option value="">Todos</option>
+      <option value="true">Activos</option>
+      <option value="false">Inactivos</option>
+    </select>
+  </label>
+</div>
+
+@if (isLoading()) {
+  <p class="muted">Cargando...</p>
+} @else {
+  @for (u of result()?.content ?? []; track u.id) {
+    <div class="card" style="margin-bottom: 0.8rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+        <div>
+          <p style="font-weight: 500;">
+            {{ u.firstName }} {{ u.lastName }}
+            <span class="badge" style="background: var(--color-bg); color: var(--color-muted); margin-left: 0.4rem;">{{ roleLabel(u.role) }}</span>
+            <span [class]="u.active ? 'badge badge-completada' : 'badge badge-cancelada'" style="margin-left: 0.3rem;">
+              {{ u.active ? 'Activo' : 'Inactivo' }}
+            </span>
+          </p>
+          <p class="muted">{{ u.email }}{{ u.phone ? ' · ' + u.phone : '' }} · usuario {{ u.username }}</p>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary" (click)="startEdit(u)">Editar</button>
+          @if (u.role === 'ROLE_DOCTOR') {
+            <a class="btn btn-secondary" routerLink="/dashboard/doctores">Gestionar en Medicos</a>
+          } @else if (u.id !== currentUserId) {
+            <button type="button" class="btn btn-secondary" (click)="toggleActive(u)">
+              {{ u.active ? 'Desactivar' : 'Activar' }}
+            </button>
+          }
+          <button type="button" class="btn btn-secondary" (click)="resetPassword(u)">Restablecer contrasena</button>
+        </div>
+      </div>
+
+      @if (editingId() === u.id) {
+        <div class="panel">
+          @if (editError()) {
+            <div class="alert alert-error">{{ editError() }}</div>
+          }
+          <form [formGroup]="editForm" (ngSubmit)="saveEdit(u)" novalidate>
+            <div class="field-row">
+              <label class="field" [class.field--error]="editErrorText('firstName')">
+                <span>Nombre</span>
+                <input type="text" formControlName="firstName" />
+                @if (editErrorText('firstName'); as msg) { <p class="field__hint">{{ msg }}</p> }
+              </label>
+              <label class="field" [class.field--error]="editErrorText('lastName')">
+                <span>Apellido</span>
+                <input type="text" formControlName="lastName" />
+                @if (editErrorText('lastName'); as msg) { <p class="field__hint">{{ msg }}</p> }
+              </label>
+            </div>
+            <div class="field-row">
+              <label class="field" [class.field--error]="editErrorText('email')">
+                <span>Correo electronico</span>
+                <input type="email" formControlName="email" />
+                @if (editErrorText('email'); as msg) { <p class="field__hint">{{ msg }}</p> }
+              </label>
+              <label class="field" [class.field--error]="editErrorText('phone')">
+                <span>Telefono</span>
+                <input type="text" formControlName="phone" />
+                @if (editErrorText('phone'); as msg) { <p class="field__hint">{{ msg }}</p> }
+              </label>
+            </div>
+            <div style="display: flex; gap: 0.6rem;">
+              <button type="submit" class="btn btn-primary">Guardar cambios</button>
+              <button type="button" class="btn btn-secondary" (click)="cancelEdit()">Cancelar</button>
+            </div>
+          </form>
+        </div>
+      }
+    </div>
+  } @empty {
+    <div class="card">
+      <p class="muted">No hay usuarios que coincidan con los filtros.</p>
+    </div>
+  }
+
+  @if (result(); as r) {
+    @if (r.totalPages > 1) {
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+        <button type="button" class="btn btn-secondary" [disabled]="page() === 0" (click)="previousPage()">&larr; Anterior</button>
+        <span class="muted">Pagina {{ r.page + 1 }} de {{ r.totalPages }} · {{ r.totalElements }} usuarios</span>
+        <button type="button" class="btn btn-secondary" [disabled]="page() + 1 >= r.totalPages" (click)="nextPage()">Siguiente &rarr;</button>
+      </div>
+    }
+  }
+}

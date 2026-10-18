@@ -1,17 +1,44 @@
 <h2 class="page-title">Agendar cita</h2>
-<p class="page-subtitle">Elige un medico, un dia con disponibilidad y un horario.</p>
+<p class="page-subtitle">
+  {{ isStaff ? 'Agenda una cita a nombre de un paciente.' : 'Elige un medico, un dia con disponibilidad y un horario.' }}
+</p>
 
-@if (booked(); as appt) {
+@if (isStaff && patientId() === null) {
   <div class="card">
-    <div class="alert alert-success">Tu cita quedo reservada.</div>
+    <p style="margin-bottom: 1rem;">Para agendar a nombre de un paciente, primero busca o registra al paciente.</p>
+    <a class="btn btn-primary" routerLink="/dashboard/pacientes">Ir a Pacientes</a>
+  </div>
+} @else if (booked(); as appt) {
+  <div class="card">
+    <div class="alert alert-success">La cita quedo reservada.</div>
     <p style="font-weight: 500; font-size: 1.05rem;">{{ appt.doctorName }} · {{ appt.specialty }}</p>
+    @if (isStaff) {
+      <p style="margin-top: 0.25rem;">Paciente: <strong>{{ appt.patientName }}</strong></p>
+    }
     <p class="muted" style="margin-top: 0.25rem;">{{ appt.appointmentDate }} a las {{ appt.appointmentTime.slice(0, 5) }}</p>
     <div style="display: flex; gap: 0.6rem; margin-top: 1.25rem;">
-      <a class="btn btn-primary" routerLink="/dashboard/mis-citas">Ver mis citas</a>
+      @if (isStaff) {
+        <a class="btn btn-primary" routerLink="/dashboard/calendario">Volver al calendario</a>
+      } @else {
+        <a class="btn btn-primary" routerLink="/dashboard/mis-citas">Ver mis citas</a>
+      }
       <button type="button" class="btn btn-secondary" (click)="bookAnother()">Agendar otra</button>
     </div>
   </div>
 } @else {
+
+  @if (isStaff) {
+    <div class="card" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+      <div>
+        <p class="muted">Agendando a nombre de</p>
+        <p style="font-weight: 500; font-size: 1.05rem;">{{ patient()?.fullName ?? 'Cargando paciente...' }}</p>
+        @if (patient()?.phone) {
+          <p class="muted">{{ patient()?.phone }}</p>
+        }
+      </div>
+      <a class="btn btn-secondary" routerLink="/dashboard/pacientes">Cambiar paciente</a>
+    </div>
+  }
 
   <div class="card" style="margin-bottom: 1.5rem;">
     <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">1. Elige el medico</h3>
@@ -54,7 +81,7 @@
 
   @if (slot(); as s) {
     <div class="card">
-      <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">3. Confirma tu cita</h3>
+      <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">3. Confirma la cita</h3>
 
       <p style="font-size: 0.95rem;">
         <strong>{{ selectedDoctor()?.fullName }}</strong> · {{ selectedDoctor()?.specialty }}<br />

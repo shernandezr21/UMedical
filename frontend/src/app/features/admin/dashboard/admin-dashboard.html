@@ -1,0 +1,104 @@
+<h2 class="page-title">Panel</h2>
+<p class="page-subtitle">Actividad de la clinica en el periodo que elijas.</p>
+
+<div class="card" style="margin-bottom: 1.5rem;">
+  <div class="presets">
+    <button type="button" class="btn" [class.btn-primary]="preset() === 'last30'" [class.btn-secondary]="preset() !== 'last30'" (click)="applyPreset('last30')">Ultimos 30 dias</button>
+    <button type="button" class="btn" [class.btn-primary]="preset() === 'month'" [class.btn-secondary]="preset() !== 'month'" (click)="applyPreset('month')">Este mes</button>
+    <button type="button" class="btn" [class.btn-primary]="preset() === 'next30'" [class.btn-secondary]="preset() !== 'next30'" (click)="applyPreset('next30')">Proximos 30 dias</button>
+    <button type="button" class="btn" [class.btn-primary]="preset() === 'last90'" [class.btn-secondary]="preset() !== 'last90'" (click)="applyPreset('last90')">Ultimos 90 dias</button>
+  </div>
+  <div class="field-row" style="margin-top: 1rem; max-width: 480px;">
+    <label class="field" style="margin-bottom: 0;">
+      <span>Desde</span>
+      <input type="date" [value]="startDate()" (change)="onStartChange($event)" />
+    </label>
+    <label class="field" style="margin-bottom: 0;">
+      <span>Hasta</span>
+      <input type="date" [value]="endDate()" (change)="onEndChange($event)" />
+    </label>
+  </div>
+</div>
+
+@if (errorMessage()) {
+  <div class="alert alert-error">{{ errorMessage() }}</div>
+}
+
+@if (isLoading() && !report()) {
+  <p class="muted">Cargando...</p>
+}
+
+@if (report(); as r) {
+  <div class="kpi-grid">
+    <div class="kpi"><p class="kpi__value">{{ r.totalAppointments }}</p><p class="kpi__label">Citas en el periodo</p></div>
+    <div class="kpi kpi--completed"><p class="kpi__value">{{ r.completed }}</p><p class="kpi__label">Completadas</p></div>
+    <div class="kpi kpi--pending"><p class="kpi__value">{{ r.pending }}</p><p class="kpi__label">Pendientes</p></div>
+    <div class="kpi kpi--cancelled"><p class="kpi__value">{{ r.cancelled }}</p><p class="kpi__label">Canceladas ({{ cancelRate() }}%)</p></div>
+    <div class="kpi"><p class="kpi__value">{{ r.unattended }}</p><p class="kpi__label">Sin atender</p></div>
+    <div class="kpi"><p class="kpi__value">{{ r.activeDoctors }}</p><p class="kpi__label">Medicos activos</p></div>
+    <div class="kpi"><p class="kpi__value">{{ r.activePatients }}</p><p class="kpi__label">Pacientes activos</p></div>
+  </div>
+
+  @if (r.totalAppointments === 0) {
+    <div class="card"><p class="muted">No hay citas en este periodo.</p></div>
+  } @else {
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <h3 class="chart-title">Citas por estado</h3>
+      <div class="stack">
+        @for (seg of statusSegments(); track seg.label) {
+          <div class="stack__segment" [style.width.%]="seg.percent" [style.background]="seg.color" [title]="seg.label + ': ' + seg.count"></div>
+        }
+      </div>
+      <div class="legend">
+        @for (seg of statusSegments(); track seg.label) {
+          <span><span class="legend__dot" [style.background]="seg.color"></span>{{ seg.label }}: <strong>{{ seg.count }}</strong></span>
+        }
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <h3 class="chart-title">Citas por dia</h3>
+      <div class="columns">
+        @for (col of dayColumns(); track col.date) {
+          <div class="columns__col" [style.height.%]="col.height" [title]="col.date + ': ' + col.count + ' cita(s)'"></div>
+        }
+      </div>
+      @if (dayColumns().length > 0) {
+        <div class="columns__axis">
+          <span>{{ dayColumns()[0].date }}</span>
+          <span>{{ dayColumns()[dayColumns().length - 1].date }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <h3 class="chart-title">Citas por especialidad</h3>
+      @for (item of r.bySpecialty; track item.label) {
+        <div class="hbar">
+          <span>{{ item.label }}</span>
+          <div class="hbar__track"><div class="hbar__fill" [style.width.%]="(item.count / maxSpecialty()) * 100"></div></div>
+          <strong>{{ item.count }}</strong>
+        </div>
+      }
+    </div>
+
+    <div class="card">
+      <h3 class="chart-title">Citas por medico</h3>
+      <table class="data-table">
+        <thead>
+          <tr><th>Medico</th><th>Total</th><th>Completadas</th><th>Canceladas</th></tr>
+        </thead>
+        <tbody>
+          @for (d of r.byDoctor; track d.doctorId) {
+            <tr>
+              <td>{{ d.doctorName }}</td>
+              <td><strong>{{ d.total }}</strong></td>
+              <td>{{ d.completed }}</td>
+              <td>{{ d.cancelled }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+}

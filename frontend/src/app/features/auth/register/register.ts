@@ -1,9 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, viewChild } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { CAPTCHA_SITE_KEY } from '../../../core/api.config';
 import { controlErrorText } from '../../../core/form-errors';
 import { RegisterRequest } from '../../../core/models/auth.model';
 import { AuthService } from '../../../core/services/auth.service';
+import { Captcha } from '../../../shared/captcha/captcha';
 
 const passwordsMatch = (group: AbstractControl): ValidationErrors | null => {
   const password = group.get('password')?.value;
@@ -14,7 +16,7 @@ const passwordsMatch = (group: AbstractControl): ValidationErrors | null => {
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, Captcha],
   templateUrl: './register.html',
   styleUrl: '../login/login.scss'
 })
@@ -25,9 +27,12 @@ export class Register {
 
   readonly bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
   readonly today = this.toIso(new Date());
+  readonly captchaSiteKey = CAPTCHA_SITE_KEY;
 
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
+  captchaToken = signal<string | null>(null);
+  private captcha = viewChild(Captcha);
 
   form = this.fb.group({
     username: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(50),
@@ -65,6 +70,11 @@ export class Register {
       return;
     }
 
+    if (this.captchaSiteKey && !this.captchaToken()) {
+      this.errorMessage.set('Completa la verificacion anti-bots.');
+      return;
+    }
+
     const request: RegisterRequest = {
       username: raw.username!.trim(),
       email: raw.email!.trim(),
@@ -74,7 +84,8 @@ export class Register {
       phone: raw.phone?.trim() || undefined,
       birthDate: raw.birthDate || undefined,
       address: raw.address?.trim() || undefined,
-      bloodType: raw.bloodType || undefined
+      bloodType: raw.bloodType || undefined,
+      captchaToken: this.captchaToken() ?? undefined
     };
 
     this.errorMessage.set(null);
@@ -87,6 +98,7 @@ export class Register {
       },
       error: (err) => {
         this.isLoading.set(false);
+        this.captcha()?.reset();   // el token del captcha es de un solo uso
         const details: string[] | undefined = err?.error?.details;
         if (err?.status === 0) {
           this.errorMessage.set('No se pudo conectar con el servidor.');

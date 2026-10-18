@@ -4,8 +4,16 @@
 
     <nav class="shell__nav">
       @if (role === 'ROLE_ADMIN') {
-        <a routerLink="/dashboard/doctores" routerLinkActive="active">Nuevo medico</a>
+        <a routerLink="/dashboard/panel" routerLinkActive="active">Panel</a>
+      }
+      @if (role === 'ROLE_ADMIN' || role === 'ROLE_SECRETARY') {
+        <a routerLink="/dashboard/calendario" routerLinkActive="active">Calendario</a>
+        <a routerLink="/dashboard/pacientes" routerLinkActive="active">Pacientes</a>
+      }
+      @if (role === 'ROLE_ADMIN') {
+        <a routerLink="/dashboard/doctores" routerLinkActive="active">Medicos</a>
         <a routerLink="/dashboard/especialidades" routerLinkActive="active">Especialidades</a>
+        <a routerLink="/dashboard/usuarios" routerLinkActive="active">Usuarios</a>
       }
       @if (role === 'ROLE_DOCTOR') {
         <a routerLink="/dashboard/mi-agenda" routerLinkActive="active">Mi agenda</a>

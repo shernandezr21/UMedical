@@ -1,18 +1,35 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../api.config';
-import { PatientProfile, UpdatePatientProfileRequest } from '../models/patient.model';
+import {
+  CreatedPatient, CreatePatientRequest, PatientProfile, PatientSummary, UpdatePatientProfileRequest
+} from '../models/patient.model';
 
 @Injectable({ providedIn: 'root' })
 export class PatientService {
   private http = inject(HttpClient);
 
+  // ---- Paciente: su propio perfil ----
   getProfile(): Observable<PatientProfile> {
     return this.http.get<PatientProfile>(`${API_BASE_URL}/patients/me`);
   }
 
   updateProfile(request: UpdatePatientProfileRequest): Observable<PatientProfile> {
     return this.http.put<PatientProfile>(`${API_BASE_URL}/patients/me`, request);
+  }
+
+  // ---- Secretaria y admin ----
+  search(query: string): Observable<PatientSummary[]> {
+    const params = new HttpParams().set('search', query);
+    return this.http.get<PatientSummary[]>(`${API_BASE_URL}/patients`, { params });
+  }
+
+  getById(id: number): Observable<PatientSummary> {
+    return this.http.get<PatientSummary>(`${API_BASE_URL}/patients/${id}`);
+  }
+
+  create(request: CreatePatientRequest): Observable<CreatedPatient> {
+    return this.http.post<CreatedPatient>(`${API_BASE_URL}/patients`, request);
   }
 }

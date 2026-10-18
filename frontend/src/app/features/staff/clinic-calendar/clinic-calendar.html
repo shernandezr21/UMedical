@@ -1,0 +1,122 @@
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+  <div>
+    <h2 class="page-title">Calendario</h2>
+    <p class="page-subtitle">Todas las citas de la clinica. Haz clic en una cita para ver su detalle.</p>
+  </div>
+  <a class="btn btn-primary" routerLink="/dashboard/pacientes">Nueva cita</a>
+</div>
+
+@if (errorMessage() && !selected()) {
+  <div class="alert alert-error">{{ errorMessage() }}</div>
+}
+@if (successMessage()) {
+  <div class="alert alert-success">{{ successMessage() }}</div>
+}
+
+<label class="field" style="max-width: 320px;">
+  <span>Medico</span>
+  <select (change)="onDoctorFilter($event)">
+    <option value="">Todos los medicos</option>
+    @for (d of doctors(); track d.id) {
+      <option [value]="d.id">{{ d.fullName }} · {{ d.specialty }}</option>
+    }
+  </select>
+</label>
+
+<div class="calendar-nav">
+  <button type="button" class="btn btn-secondary" (click)="previousWeek()">&larr; Semana anterior</button>
+  <div style="display: flex; align-items: center; gap: 0.75rem;">
+    <span class="calendar-nav__label">{{ weekRangeLabel() }}</span>
+    <button type="button" class="btn btn-secondary" (click)="goToToday()">Hoy</button>
+  </div>
+  <button type="button" class="btn btn-secondary" (click)="nextWeek()">Semana siguiente &rarr;</button>
+</div>
+
+@if (isLoading()) {
+  <p class="muted">Cargando...</p>
+} @else {
+  <div class="calendar-grid">
+    @for (day of weekDays(); track day.iso) {
+      <div class="calendar-day">
+        <p class="calendar-day__label" [class.calendar-day__label--today]="day.isToday">{{ day.label }}</p>
+        @for (appt of appointmentsForDay(day.iso); track appt.id) {
+          <button type="button" class="calendar-chip" [class]="'calendar-chip--' + appt.status.toLowerCase()"
+                  [class.calendar-chip--selected]="selected()?.id === appt.id" (click)="select(appt)">
+            {{ appt.appointmentTime.slice(0, 5) }} {{ appt.patientName }}
+            <span class="calendar-chip__doctor">{{ appt.doctorName }}</span>
+          </button>
+        } @empty {
+          <p class="calendar-day__empty">Sin citas</p>
+        }
+      </div>
+    }
+  </div>
+}
+
+@if (selected(); as appt) {
+  <div class="card" style="margin-top: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start;">
+      <div>
+        <p style="font-weight: 500; font-size: 1.1rem;">{{ appt.patientName }}</p>
+        <p class="muted">{{ appt.patientPhone || 'Sin telefono registrado' }}</p>
+      </div>
+      <span [class]="badgeClass(appt)">{{ statusLabel(appt) }}</span>
+    </div>
+
+    <p style="margin-top: 0.9rem;">
+      {{ appt.appointmentDate }} a las <strong>{{ appt.appointmentTime.slice(0, 5) }}</strong>
+      con <strong>{{ appt.doctorName }}</strong> · {{ appt.specialty }}
+    </p>
+    @if (appt.reason) {
+      <p class="muted" style="margin-top: 0.25rem;">Motivo: {{ appt.reason }}</p>
+    }
+    @if (appt.status === 'CANCELADA' && appt.cancellationReason) {
+      <p class="muted" style="margin-top: 0.25rem;">Motivo de la cancelacion: {{ appt.cancellationReason }}</p>
+    }
+
+    @if (errorMessage()) {
+      <div class="alert alert-error" style="margin-top: 1rem;">{{ errorMessage() }}</div>
+    }
+
+    <div style="display: flex; gap: 0.6rem; margin-top: 1rem;">
+      @if (appt.status === 'PENDIENTE') {
+        <button type="button" class="btn btn-secondary" (click)="startReschedule()">Reagendar</button>
+        <button type="button" class="btn btn-secondary" (click)="startCancel()">Cancelar cita</button>
+      }
+      <a class="btn btn-secondary" routerLink="/dashboard/agendar" [queryParams]="{ patientId: appt.patientId }">
+        Nueva cita para este paciente
+      </a>
+      <button type="button" class="btn btn-secondary" (click)="clearSelection()">Cerrar</button>
+    </div>
+
+    @if (cancelOpen()) {
+      <div class="panel">
+        <label class="field">
+          <span>Motivo de la cancelacion (opcional)</span>
+          <textarea rows="2" maxlength="255" (input)="onCancelReasonInput($event)"></textarea>
+        </label>
+        <div style="display: flex; gap: 0.6rem;">
+          <button type="button" class="btn btn-primary" [disabled]="isBusy()" (click)="confirmCancel()">
+            {{ isBusy() ? 'Cancelando...' : 'Confirmar cancelacion' }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="closeActions()">Volver</button>
+        </div>
+      </div>
+    }
+
+    @if (rescheduleOpen()) {
+      <div class="panel">
+        <app-slot-picker [doctorId]="appt.doctorId" (slotSelected)="newSlot.set($event)" />
+        @if (newSlot(); as s) {
+          <p style="margin-top: 1rem;">Nuevo horario: <strong>{{ s.date }} a las {{ s.time.slice(0, 5) }}</strong></p>
+        }
+        <div style="display: flex; gap: 0.6rem; margin-top: 1rem;">
+          <button type="button" class="btn btn-primary" [disabled]="!newSlot() || isBusy()" (click)="confirmReschedule()">
+            {{ isBusy() ? 'Reagendando...' : 'Confirmar nuevo horario' }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="closeActions()">Volver</button>
+        </div>
+      </div>
+    }
+  </div>
+}

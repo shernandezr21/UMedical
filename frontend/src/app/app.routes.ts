@@ -25,14 +25,46 @@ export const routes: Routes = [
 
       // Admin
       {
+        path: 'panel',
+        loadComponent: () => import('./features/admin/dashboard/admin-dashboard').then(m => m.AdminDashboard),
+        canActivate: [roleGuard(['ROLE_ADMIN'])]
+      },
+      {
+        path: 'usuarios',
+        loadComponent: () => import('./features/admin/users/users').then(m => m.UsersAdmin),
+        canActivate: [roleGuard(['ROLE_ADMIN'])]
+      },
+      {
         path: 'doctores',
+        loadComponent: () => import('./features/admin/doctors/doctors-admin').then(m => m.DoctorsAdmin),
+        canActivate: [roleGuard(['ROLE_ADMIN'])]
+      },
+      {
+        path: 'doctores/nuevo',
         loadComponent: () => import('./features/doctors/create-doctor/create-doctor').then(m => m.CreateDoctor),
+        canActivate: [roleGuard(['ROLE_ADMIN'])]
+      },
+      {
+        path: 'doctores/:id/horarios',
+        loadComponent: () => import('./features/admin/doctor-schedules/doctor-schedules').then(m => m.DoctorSchedules),
         canActivate: [roleGuard(['ROLE_ADMIN'])]
       },
       {
         path: 'especialidades',
         loadComponent: () => import('./features/specialties/create-specialty/create-specialty').then(m => m.CreateSpecialty),
         canActivate: [roleGuard(['ROLE_ADMIN'])]
+      },
+
+      // Secretaria y admin
+      {
+        path: 'calendario',
+        loadComponent: () => import('./features/staff/clinic-calendar/clinic-calendar').then(m => m.ClinicCalendar),
+        canActivate: [roleGuard(['ROLE_SECRETARY', 'ROLE_ADMIN'])]
+      },
+      {
+        path: 'pacientes',
+        loadComponent: () => import('./features/staff/patients/patients').then(m => m.Patients),
+        canActivate: [roleGuard(['ROLE_SECRETARY', 'ROLE_ADMIN'])]
       },
 
       // Doctor
@@ -42,15 +74,15 @@ export const routes: Routes = [
         canActivate: [roleGuard(['ROLE_DOCTOR'])]
       },
 
-      // Paciente
-      {
-        path: 'mis-citas',
-        loadComponent: () => import('./features/patient/my-appointments/my-appointments').then(m => m.MyAppointments),
-        canActivate: [roleGuard(['ROLE_PATIENT'])]
-      },
+      // Paciente (y agendar tambien para la secretaria y el admin)
       {
         path: 'agendar',
         loadComponent: () => import('./features/patient/book-appointment/book-appointment').then(m => m.BookAppointment),
+        canActivate: [roleGuard(['ROLE_PATIENT', 'ROLE_SECRETARY', 'ROLE_ADMIN'])]
+      },
+      {
+        path: 'mis-citas',
+        loadComponent: () => import('./features/patient/my-appointments/my-appointments').then(m => m.MyAppointments),
         canActivate: [roleGuard(['ROLE_PATIENT'])]
       },
       {

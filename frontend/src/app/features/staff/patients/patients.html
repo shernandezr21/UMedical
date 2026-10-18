@@ -1,0 +1,124 @@
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+  <div>
+    <h2 class="page-title">Pacientes</h2>
+    <p class="page-subtitle">Busca un paciente para agendarle una cita, o registra uno nuevo.</p>
+  </div>
+  <button type="button" class="btn btn-primary" (click)="toggleForm()">
+    {{ showForm() ? 'Cerrar' : 'Nuevo paciente' }}
+  </button>
+</div>
+
+@if (created(); as result) {
+  <div class="card" style="margin-bottom: 1.5rem; border-color: var(--color-completada);">
+    <div class="alert alert-success" style="margin-bottom: 1rem;">
+      Paciente registrado: <strong>{{ result.patient.fullName }}</strong>
+    </div>
+    <p>Usuario: <strong>{{ result.username }}</strong></p>
+    <p style="margin-top: 0.3rem;">Contrasena temporal: <strong style="font-family: monospace;">{{ result.temporaryPassword }}</strong></p>
+    <p class="muted" style="margin-top: 0.6rem;">
+      Esta contrasena se muestra una sola vez. Entregasela al paciente; puede cambiarla desde su perfil.
+    </p>
+    <div style="display: flex; gap: 0.6rem; margin-top: 1rem;">
+      <button type="button" class="btn btn-secondary" (click)="copyCredentials()">
+        {{ copied() ? 'Copiado' : 'Copiar usuario y contrasena' }}
+      </button>
+      <a class="btn btn-primary" routerLink="/dashboard/agendar" [queryParams]="{ patientId: result.patient.patientId }">
+        Agendar cita a este paciente
+      </a>
+      <button type="button" class="btn btn-secondary" (click)="dismissCreated()">Cerrar aviso</button>
+    </div>
+  </div>
+}
+
+@if (showForm()) {
+  <div class="card" style="margin-bottom: 1.5rem;">
+    <h3 style="font-size: 1.1rem; margin-bottom: 1.1rem;">Nuevo paciente</h3>
+
+    @if (formError()) {
+      <div class="alert alert-error">{{ formError() }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="savePatient()" novalidate>
+      <div class="field-row">
+        <label class="field" [class.field--error]="errorText('firstName')">
+          <span>Nombre *</span>
+          <input type="text" formControlName="firstName" />
+          @if (errorText('firstName'); as msg) { <p class="field__hint">{{ msg }}</p> }
+        </label>
+        <label class="field" [class.field--error]="errorText('lastName')">
+          <span>Apellido *</span>
+          <input type="text" formControlName="lastName" />
+          @if (errorText('lastName'); as msg) { <p class="field__hint">{{ msg }}</p> }
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label class="field" [class.field--error]="errorText('email')">
+          <span>Correo electronico * (de aqui sale su usuario)</span>
+          <input type="email" formControlName="email" />
+          @if (errorText('email'); as msg) { <p class="field__hint">{{ msg }}</p> }
+        </label>
+        <label class="field" [class.field--error]="errorText('phone')">
+          <span>Telefono</span>
+          <input type="text" formControlName="phone" />
+          @if (errorText('phone'); as msg) { <p class="field__hint">{{ msg }}</p> }
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label class="field">
+          <span>Fecha de nacimiento</span>
+          <input type="date" formControlName="birthDate" [max]="today" />
+        </label>
+        <label class="field">
+          <span>Tipo de sangre</span>
+          <select formControlName="bloodType">
+            <option value="">No especificar</option>
+            @for (t of bloodTypes; track t) {
+              <option [value]="t">{{ t }}</option>
+            }
+          </select>
+        </label>
+      </div>
+
+      <label class="field" [class.field--error]="errorText('address')">
+        <span>Direccion</span>
+        <input type="text" formControlName="address" />
+        @if (errorText('address'); as msg) { <p class="field__hint">{{ msg }}</p> }
+      </label>
+
+      <button type="submit" class="btn btn-primary" [disabled]="isSaving()">
+        {{ isSaving() ? 'Registrando...' : 'Registrar paciente' }}
+      </button>
+    </form>
+  </div>
+}
+
+<label class="field" style="max-width: 460px;">
+  <span>Buscar por nombre, usuario, correo o telefono</span>
+  <input type="search" placeholder="Ej. Ramirez" (input)="onSearchInput($event)" />
+</label>
+
+@if (searchError()) {
+  <div class="alert alert-error">{{ searchError() }}</div>
+}
+
+@if (isSearching()) {
+  <p class="muted">Buscando...</p>
+} @else {
+  @for (p of patients(); track p.patientId) {
+    <div class="card" style="margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+      <div>
+        <p style="font-weight: 500;">{{ p.fullName }}</p>
+        <p class="muted">{{ p.email }}{{ p.phone ? ' · ' + p.phone : '' }} · usuario {{ p.username }}</p>
+      </div>
+      <a class="btn btn-secondary" routerLink="/dashboard/agendar" [queryParams]="{ patientId: p.patientId }">
+        Agendar cita
+      </a>
+    </div>
+  } @empty {
+    <div class="card">
+      <p class="muted">No se encontraron pacientes. Puedes registrar uno nuevo con el boton de arriba.</p>
+    </div>
+  }
+}

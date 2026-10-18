@@ -5,7 +5,9 @@ export interface AppointmentResponse {
   doctorId: number;
   doctorName: string;
   specialty: string;
+  patientId: number;
   patientName: string;
+  patientPhone?: string | null;
   appointmentDate: string;
   appointmentTime: string;
   status: AppointmentStatus;
@@ -15,6 +17,8 @@ export interface AppointmentResponse {
 
 export interface AppointmentRequest {
   doctorId: number;
+  /** Solo lo envia la secretaria o el admin al agendar a nombre de un paciente. */
+  patientId?: number;
   appointmentDate: string;
   appointmentTime: string;
   reason?: string;

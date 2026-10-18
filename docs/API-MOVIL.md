@@ -35,6 +35,8 @@ Formatos: fechas `yyyy-MM-dd`, horas `HH:mm:ss`. Estados de cita: `PENDIENTE`, `
 ```
 Obligatorios: `username` (4 a 50, letras, números, `.`, `-`, `_`), `email`, `password` (8 a 72), `firstName`, `lastName`. Opcionales: el resto. Responde **201** con lo mismo que el login (ya trae token, no hace falta iniciar sesión después). **409** si el username o el email ya existen.
 
+**Protección anti-bots:** el registro tiene un límite de intentos por IP (ver **429** más abajo). Además, si el backend publicado tiene el captcha activado (`CAPTCHA_ENABLED=true`), el registro exige un campo `captchaToken` con el token de Cloudflare Turnstile. La app puede obtenerlo con el widget dentro de un WebView, o mandar al usuario a registrarse en la web. Coordinen antes de activar el captcha en un entorno que use la app. Con las claves de prueba de Turnstile el token `XXXX.DUMMY.TOKEN.XXXX` siempre es aceptado.
+
 ### Login (público): `POST /auth/login`
 ```json
 { "username": "paciente1", "password": "password" }
@@ -59,8 +61,9 @@ Todos requieren token.
 | Método y ruta | Para qué | Respuesta |
 |---|---|---|
 | `GET /specialties` | Lista de especialidades | `[{ id, name, description }]` |
-| `GET /doctors?specialtyId=1` | Médicos (el filtro es opcional) | `[{ id, fullName, specialty, licenseNumber, biography }]` |
+| `GET /doctors?specialtyId=1` | Médicos activos (los desactivados no aparecen; el filtro es opcional) | `[{ id, fullName, specialty, licenseNumber, biography }]` |
 | `GET /schedules/available?doctorId=1&date=2026-11-02` | Horarios **libres** de un médico en una fecha | `[{ date, time }]` (vacío si no atiende ese día) |
+| `GET /schedules/available/range?doctorId=1&startDate=2026-11-02&endDate=2026-11-15` | Cuántos horarios libres tiene cada día, para pintar un calendario (máximo 62 días) | `[{ date, availableSlots }]` |
 | `POST /appointments` | Reservar | **201** con la cita |
 | `GET /appointments/my-history` | Todas mis citas, la más reciente primero | `[cita]` |
 | `PUT /appointments/{id}/reschedule` | Cambiar de horario una cita pendiente | **200** con la cita |
@@ -80,7 +83,7 @@ Todos requieren token.
   "reason": "Chequeo general"
 }
 ```
-`appointmentTime` debe ser uno de los `time` que devolvió `/schedules/available` para esa fecha.
+`appointmentTime` debe ser uno de los `time` que devolvió `/schedules/available` para esa fecha. No envíes `patientId`: es solo para la secretaria y el admin, que agendan a nombre de un paciente.
 
 ### Reagendar: `PUT /appointments/{id}/reschedule`
 ```json
@@ -97,7 +100,9 @@ El cuerpo es opcional: `{ "reason": "Tuve un imprevisto" }`.
   "doctorId": 1,
   "doctorName": "Carlos Perez",
   "specialty": "Medicina General",
+  "patientId": 1,
   "patientName": "Jose Ramirez",
+  "patientPhone": "5555-0004",
   "appointmentDate": "2026-11-02",
   "appointmentTime": "08:30:00",
   "status": "PENDIENTE",
@@ -167,11 +172,13 @@ Todos los errores tienen el mismo formato:
 | 403 | Autenticado, pero la cita o el recurso no es suyo, o su rol no alcanza |
 | 404 | No existe (cita, documento, o documento sin PDF) |
 | 409 | Choca con el estado actual: horario no disponible, ya tiene otra cita a esa hora, la cita no está pendiente, username o email repetidos |
+| 429 | Demasiados intentos desde la misma IP (registro y login tienen límite). Trae el header `Retry-After` con los segundos de espera; mostrar el `message` al usuario |
 
 ## 5. Reglas que el usuario va a encontrar
 
 - Se reserva con **al menos 60 minutos** de anticipación. Se puede reservar para hoy.
 - Solo se puede reservar un horario que aparece en `/schedules/available`.
+- `/schedules/available` y `/schedules/available/range` ya descartan lo que no se puede reservar (horarios ocupados, o con menos de 60 minutos de anticipación), así que lo que devuelven siempre se puede reservar.
 - Un paciente no puede tener dos citas activas a la misma fecha y hora, aunque sean con médicos distintos.
 - Cancelar y reagendar: solo citas `PENDIENTE`, solo las propias, y con **al menos 2 horas** de anticipación.
 - Un horario cancelado vuelve a quedar libre.

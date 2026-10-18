@@ -1,0 +1,132 @@
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.kpi {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.1rem;
+
+  &__value {
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    font-weight: 500;
+    line-height: 1.1;
+  }
+
+  &__label {
+    color: var(--color-muted);
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+  }
+
+  &--completed .kpi__value { color: var(--color-completada); }
+  &--pending .kpi__value { color: var(--color-pendiente); }
+  &--cancelled .kpi__value { color: var(--color-cancelada); }
+}
+
+.chart-title {
+  font-size: 1.05rem;
+  margin-bottom: 1rem;
+}
+
+.stack {
+  display: flex;
+  height: 18px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--color-border);
+
+  &__segment { height: 100%; }
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  margin-top: 0.9rem;
+  font-size: 0.88rem;
+
+  &__dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 0.4rem;
+  }
+}
+
+.columns {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 160px;
+  border-bottom: 1px solid var(--color-border);
+
+  &__col {
+    flex: 1;
+    min-height: 2px;
+    background: var(--color-primary-light);
+    border-radius: 3px 3px 0 0;
+
+    &:hover { background: var(--color-primary); }
+  }
+
+  &__axis {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.4rem;
+    font-size: 0.75rem;
+    color: var(--color-muted);
+  }
+}
+
+.hbar {
+  display: grid;
+  grid-template-columns: 170px 1fr 36px;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.9rem;
+
+  &__track {
+    height: 10px;
+    border-radius: 999px;
+    background: var(--color-border);
+    overflow: hidden;
+  }
+
+  &__fill {
+    height: 100%;
+    background: var(--color-primary);
+    border-radius: 999px;
+  }
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+
+  th, td {
+    text-align: left;
+    padding: 0.6rem 0.4rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  th {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--color-muted);
+  }
+}

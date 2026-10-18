@@ -14,6 +14,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.security.authentication.DisabledException;
 
 import java.util.List;
 
@@ -123,5 +124,12 @@ public class GlobalExceptionHandler {
         ErrorResponse body = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(), "Bad Request", "Falta el parametro: " + ex.getParameterName(), null);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<ErrorResponse> handleDisabled(DisabledException ex) {
+        ErrorResponse body = new ErrorResponse(
+                HttpStatus.FORBIDDEN.value(), "Forbidden", "Tu cuenta esta desactivada. Contacta a la clinica", null);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
 }

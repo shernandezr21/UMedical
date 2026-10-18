@@ -1,319 +1,5028 @@
 {
   "info": {
-    "name": "U-Medical API - Fase 1 y 2 (Completa)",
-    "description": "Coleccion unica, organizada por rol, en el orden exacto de ejecucion para probar el flujo completo: autenticacion, catalogos, agendamiento del paciente, diagnostico del doctor, y casos negativos de seguridad/validacion.",
+    "name": "U-Medical API (Bloque 1A)",
+    "description": "Coleccion unica en orden de ejecucion. Usa fechas dinamicas (un lunes al azar de las proximas 8 semanas) y elige los horarios libres reales, asi se puede correr repetidamente con Run. Para las pruebas de documentos necesita citas pasadas de paciente1: corre seed-citas-pasadas.sql una sola vez. Crea datos de prueba en cada corrida (pacientes y medicos nuevos).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:8080" },
-    { "key": "tokenAdmin", "value": "" },
-    { "key": "tokenDoctor", "value": "" },
-    { "key": "tokenOtroDoctor", "value": "" },
-    { "key": "tokenPaciente", "value": "" },
-    { "key": "createdAppointmentId", "value": "" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "tokenAdmin",
+      "value": ""
+    },
+    {
+      "key": "tokenDoctor",
+      "value": ""
+    },
+    {
+      "key": "tokenOtroDoctor",
+      "value": ""
+    },
+    {
+      "key": "tokenPaciente",
+      "value": ""
+    },
+    {
+      "key": "tokenNuevoPaciente",
+      "value": ""
+    },
+    {
+      "key": "uniq",
+      "value": ""
+    },
+    {
+      "key": "testDate",
+      "value": ""
+    },
+    {
+      "key": "testDateTuesday",
+      "value": ""
+    },
+    {
+      "key": "slotA",
+      "value": ""
+    },
+    {
+      "key": "slotB",
+      "value": ""
+    },
+    {
+      "key": "slotC",
+      "value": ""
+    },
+    {
+      "key": "appointmentId",
+      "value": ""
+    },
+    {
+      "key": "pastApptId",
+      "value": ""
+    },
+    {
+      "key": "yesterday",
+      "value": ""
+    },
+    {
+      "key": "pacienteNombre",
+      "value": ""
+    },
+    {
+      "key": "cancelId",
+      "value": ""
+    },
+    {
+      "key": "cancelId2",
+      "value": ""
+    },
+    {
+      "key": "documentId",
+      "value": ""
+    },
+    {
+      "key": "createdDoctorId",
+      "value": ""
+    },
+    {
+      "key": "tokenSecretaria",
+      "value": ""
+    },
+    {
+      "key": "patient1Id",
+      "value": ""
+    },
+    {
+      "key": "newPatientId",
+      "value": ""
+    },
+    {
+      "key": "walkinUsername",
+      "value": ""
+    },
+    {
+      "key": "walkinPassword",
+      "value": ""
+    },
+    {
+      "key": "walkinPatientId",
+      "value": ""
+    },
+    {
+      "key": "staffApptId",
+      "value": ""
+    },
+    {
+      "key": "adminUserId",
+      "value": ""
+    },
+    {
+      "key": "newStaffUserId",
+      "value": ""
+    },
+    {
+      "key": "newStaffUsername",
+      "value": ""
+    },
+    {
+      "key": "newStaffPassword",
+      "value": ""
+    },
+    {
+      "key": "newStaffPassword2",
+      "value": ""
+    },
+    {
+      "key": "blockId",
+      "value": ""
+    },
+    {
+      "key": "mondayBlockId",
+      "value": ""
+    },
+    {
+      "key": "mondayStart",
+      "value": ""
+    },
+    {
+      "key": "mondayEnd",
+      "value": ""
+    },
+    {
+      "key": "mondaySlot",
+      "value": ""
+    },
+    {
+      "key": "reportStart",
+      "value": ""
+    },
+    {
+      "key": "reportEnd",
+      "value": ""
+    }
   ],
   "item": [
     {
-      "name": "1. Autenticacion",
+      "name": "1. Autenticacion y registro",
       "item": [
         {
-          "name": "1.1 Login - Admin (OK)",
-          "event": [{ "listen": "test", "script": { "exec": [
-            "pm.test('Status 200', () => pm.response.to.have.status(200));",
-            "pm.collectionVariables.set('tokenAdmin', pm.response.json().token);"
-          ]}}],
+          "name": "1.1 Login admin (OK)",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"password\"\n}" },
-            "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","login"] }
-          }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ],
+              "raw": "{{baseUrl}}/api/v1/auth/login"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"password\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('tokenAdmin', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "1.2 Login - Dr. Perez (OK)",
-          "event": [{ "listen": "test", "script": { "exec": [
-            "pm.test('Status 200', () => pm.response.to.have.status(200));",
-            "pm.collectionVariables.set('tokenDoctor', pm.response.json().token);"
-          ]}}],
+          "name": "1.2 Login Dr. Perez (OK)",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"username\": \"dr.perez\",\n  \"password\": \"password\"\n}" },
-            "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","login"] }
-          }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ],
+              "raw": "{{baseUrl}}/api/v1/auth/login"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"dr.perez\",\n  \"password\": \"password\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('tokenDoctor', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "1.3 Login - Dra. Lopez (OK, para probar seguridad entre doctores)",
-          "event": [{ "listen": "test", "script": { "exec": [
-            "pm.test('Status 200', () => pm.response.to.have.status(200));",
-            "pm.collectionVariables.set('tokenOtroDoctor', pm.response.json().token);"
-          ]}}],
+          "name": "1.3 Login Dra. Lopez (OK, para probar seguridad entre doctores)",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"username\": \"dra.lopez\",\n  \"password\": \"password\"\n}" },
-            "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","login"] }
-          }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ],
+              "raw": "{{baseUrl}}/api/v1/auth/login"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"dra.lopez\",\n  \"password\": \"password\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('tokenOtroDoctor', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "1.4 Login - Paciente (OK)",
-          "event": [{ "listen": "test", "script": { "exec": [
-            "pm.test('Status 200', () => pm.response.to.have.status(200));",
-            "pm.collectionVariables.set('tokenPaciente', pm.response.json().token);"
-          ]}}],
+          "name": "1.4 Login paciente1 (OK)",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"username\": \"paciente1\",\n  \"password\": \"password\"\n}" },
-            "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","login"] }
-          }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ],
+              "raw": "{{baseUrl}}/api/v1/auth/login"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"paciente1\",\n  \"password\": \"password\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('tokenPaciente', pm.response.json().token);",
+                  "pm.collectionVariables.set('pacienteNombre', pm.response.json().fullName);"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "1.5 Login - Credenciales invalidas (401 esperado)",
-          "event": [{ "listen": "test", "script": { "exec": [
-            "pm.test('Status 401', () => pm.response.to.have.status(401));"
-          ]}}],
+          "name": "1.5 Login con credenciales invalidas (401)",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"contrasenia-incorrecta\"\n}" },
-            "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","login"] }
-          }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ],
+              "raw": "{{baseUrl}}/api/v1/auth/login"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"incorrecta\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.6 Registro de paciente nuevo (201 + token)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ],
+              "raw": "{{baseUrl}}/api/v1/auth/register"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"paciente.{{uniq}}\",\n  \"email\": \"paciente.{{uniq}}@correo.com\",\n  \"password\": \"Clave12345\",\n  \"firstName\": \"Paciente\",\n  \"lastName\": \"De Prueba\",\n  \"phone\": \"5555-0100\",\n  \"birthDate\": \"1998-05-20\",\n  \"address\": \"Calle de prueba 123\",\n  \"bloodType\": \"O+\",\n  \"captchaToken\": \"XXXX.DUMMY.TOKEN.XXXX\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('uniq', Date.now().toString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('Devuelve token y rol de paciente', () => { pm.expect(json.token).to.be.a('string'); pm.expect(json.role).to.eql('ROLE_PATIENT'); });",
+                  "pm.collectionVariables.set('tokenNuevoPaciente', json.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.7 Registro con username repetido (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ],
+              "raw": "{{baseUrl}}/api/v1/auth/register"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"paciente.{{uniq}}\",\n  \"email\": \"paciente.{{uniq}}@correo.com\",\n  \"password\": \"Clave12345\",\n  \"firstName\": \"Paciente\",\n  \"lastName\": \"De Prueba\",\n  \"phone\": \"5555-0100\",\n  \"birthDate\": \"1998-05-20\",\n  \"address\": \"Calle de prueba 123\",\n  \"bloodType\": \"O+\",\n  \"captchaToken\": \"XXXX.DUMMY.TOKEN.XXXX\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.8 Registro con datos invalidos (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ],
+              "raw": "{{baseUrl}}/api/v1/auth/register"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"ab\",\n  \"email\": \"no-es-un-correo\",\n  \"password\": \"123\",\n  \"firstName\": \"\",\n  \"lastName\": \"X\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "const json = pm.response.json();",
+                  "pm.test('Error de validacion con detalles', () => { pm.expect(json.error).to.eql('Validation Error'); pm.expect(json.details.length).to.be.above(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.9 Token invalido (401, no 403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer token.invalido.abc"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "my-history"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/my-history"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Cuerpo con formato de error', () => pm.expect(pm.response.json().error).to.eql('Unauthorized'));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
-      "name": "2. Catalogos (cualquier rol autenticado)",
+      "name": "2. Catalogos",
       "item": [
         {
           "name": "2.1 Ver especialidades",
-          "event": [{ "listen": "test", "script": { "exec": [
-            "pm.test('Status 200', () => pm.response.to.have.status(200));",
-            "pm.test('Es un arreglo', () => pm.expect(pm.response.json()).to.be.an('array'));"
-          ]}}],
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{tokenPaciente}}" }],
-            "url": { "raw": "{{baseUrl}}/api/v1/specialties", "host": ["{{baseUrl}}"], "path": ["api","v1","specialties"] }
-          }
-        },
-        {
-          "name": "2.2 Ver medicos (todos)",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{tokenPaciente}}" }],
-            "url": { "raw": "{{baseUrl}}/api/v1/doctors", "host": ["{{baseUrl}}"], "path": ["api","v1","doctors"] }
-          }
-        },
-        {
-          "name": "2.3 Ver medicos filtrado por especialidad",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{tokenPaciente}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/doctors?specialtyId=1",
-              "host": ["{{baseUrl}}"], "path": ["api","v1","doctors"],
-              "query": [{ "key": "specialtyId", "value": "1" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "specialties"
+              ],
+              "raw": "{{baseUrl}}/api/v1/specialties"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Es un arreglo', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "2.4 Especialidades SIN token (401 esperado)",
-          "event": [{ "listen": "test", "script": { "exec": [
-            "pm.test('Status 401 sin token', () => pm.response.to.have.status(401));"
-          ]}}],
+          "name": "2.2 Ver medicos",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/api/v1/specialties", "host": ["{{baseUrl}}"], "path": ["api","v1","specialties"] }
-          }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "doctors"
+              ],
+              "raw": "{{baseUrl}}/api/v1/doctors"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Ver medicos de una especialidad",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "doctors"
+              ],
+              "query": [
+                {
+                  "key": "specialtyId",
+                  "value": "1"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/doctors?specialtyId=1"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.4 Especialidades SIN token (401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "specialties"
+              ],
+              "raw": "{{baseUrl}}/api/v1/specialties"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.5 Admin: medicos, horarios y especialidades",
+          "item": [
+            {
+              "name": "2.5.1 Crear medico con horarios en un solo paso (OK)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenAdmin}}"
+                  }
+                ],
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "doctors"
+                  ],
+                  "raw": "{{baseUrl}}/api/v1/doctors"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"dr.{{uniq}}\",\n  \"email\": \"dr.{{uniq}}@clinica.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"Medico\",\n  \"lastName\": \"De Prueba\",\n  \"phone\": \"5555-0200\",\n  \"specialtyId\": 2,\n  \"licenseNumber\": \"MED-{{uniq}}\",\n  \"biography\": \"Creado desde la coleccion de Postman.\",\n  \"schedules\": [{\"dayOfWeek\": 4, \"startTime\": \"09:00\", \"endTime\": \"12:00\", \"slotDurationMinutes\": 30}, {\"dayOfWeek\": 5, \"startTime\": \"14:00\", \"endTime\": \"17:00\", \"slotDurationMinutes\": 30}]\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (!pm.collectionVariables.get('uniq')) { pm.collectionVariables.set('uniq', Date.now().toString()); }"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                      "const json = pm.response.json();",
+                      "pm.test('Devuelve id', () => pm.expect(json.id).to.be.a('number'));",
+                      "pm.collectionVariables.set('createdDoctorId', json.id);"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "2.5.2 Crear medico con bloques que se cruzan (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenAdmin}}"
+                  }
+                ],
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "doctors"
+                  ],
+                  "raw": "{{baseUrl}}/api/v1/doctors"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"dr.atomic.{{uniq}}\",\n  \"email\": \"dr.atomic.{{uniq}}@clinica.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"Medico\",\n  \"lastName\": \"De Prueba\",\n  \"phone\": \"5555-0200\",\n  \"specialtyId\": 2,\n  \"licenseNumber\": \"MED-{{uniq}}\",\n  \"biography\": \"Creado desde la coleccion de Postman.\",\n  \"schedules\": [{\"dayOfWeek\": 4, \"startTime\": \"09:00\", \"endTime\": \"12:00\", \"slotDurationMinutes\": 30}, {\"dayOfWeek\": 4, \"startTime\": \"11:00\", \"endTime\": \"14:00\", \"slotDurationMinutes\": 30}]\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                      "pm.test('Menciona el cruce', () => pm.expect(pm.response.json().message).to.include('cruzan'));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "2.5.3 Mismo username con horarios validos (200: el intento anterior no dejo nada guardado)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenAdmin}}"
+                  }
+                ],
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "doctors"
+                  ],
+                  "raw": "{{baseUrl}}/api/v1/doctors"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"dr.atomic.{{uniq}}\",\n  \"email\": \"dr.atomic.{{uniq}}@clinica.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"Medico\",\n  \"lastName\": \"De Prueba\",\n  \"phone\": \"5555-0200\",\n  \"specialtyId\": 2,\n  \"licenseNumber\": \"MED-{{uniq}}\",\n  \"biography\": \"Creado desde la coleccion de Postman.\",\n  \"schedules\": [{\"dayOfWeek\": 4, \"startTime\": \"09:00\", \"endTime\": \"12:00\", \"slotDurationMinutes\": 30}, {\"dayOfWeek\": 5, \"startTime\": \"14:00\", \"endTime\": \"17:00\", \"slotDurationMinutes\": 30}]\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "2.5.4 Crear medico como PACIENTE (403)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenPaciente}}"
+                  }
+                ],
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "doctors"
+                  ],
+                  "raw": "{{baseUrl}}/api/v1/doctors"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"dr.intruso.{{uniq}}\",\n  \"email\": \"dr.intruso.{{uniq}}@clinica.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"Medico\",\n  \"lastName\": \"De Prueba\",\n  \"phone\": \"5555-0200\",\n  \"specialtyId\": 2,\n  \"licenseNumber\": \"MED-{{uniq}}\",\n  \"biography\": \"Creado desde la coleccion de Postman.\",\n  \"schedules\": [{\"dayOfWeek\": 4, \"startTime\": \"09:00\", \"endTime\": \"12:00\", \"slotDurationMinutes\": 30}, {\"dayOfWeek\": 5, \"startTime\": \"14:00\", \"endTime\": \"17:00\", \"slotDurationMinutes\": 30}]\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "2.5.5 Ver horarios del medico creado (2 bloques)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenAdmin}}"
+                  }
+                ],
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "schedules"
+                  ],
+                  "query": [
+                    {
+                      "key": "doctorId",
+                      "value": "{{createdDoctorId}}"
+                    }
+                  ],
+                  "raw": "{{baseUrl}}/api/v1/schedules?doctorId={{createdDoctorId}}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Tiene 2 bloques', () => pm.expect(pm.response.json().length).to.eql(2));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "2.5.6 Agregar bloque que se cruza con uno existente (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenAdmin}}"
+                  }
+                ],
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "schedules"
+                  ],
+                  "raw": "{{baseUrl}}/api/v1/schedules"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"doctorId\": {{createdDoctorId}},\n  \"dayOfWeek\": 4,\n  \"startTime\": \"10:00\",\n  \"endTime\": \"11:00\",\n  \"slotDurationMinutes\": 30\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "2.5.7 Especialidad duplicada, sin importar mayusculas (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenAdmin}}"
+                  }
+                ],
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "specialties"
+                  ],
+                  "raw": "{{baseUrl}}/api/v1/specialties"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"pediatria\"\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     {
-      "name": "3. Paciente - Agendamiento",
+      "name": "3. Paciente: agendar, reagendar y cancelar",
       "item": [
         {
-          "name": "3.1 Ver horarios disponibles - Dr. Perez",
-          "event": [{ "listen": "test", "script": { "exec": [
-            "pm.test('Status 200', () => pm.response.to.have.status(200));",
-            "pm.test('Es un arreglo', () => pm.expect(pm.response.json()).to.be.an('array'));"
-          ]}}],
+          "name": "3.1 Ver horarios disponibles del Dr. Perez (un lunes al azar)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{tokenPaciente}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/schedules/available?doctorId=1&date=2026-10-05",
-              "host": ["{{baseUrl}}"], "path": ["api","v1","schedules","available"],
-              "query": [{ "key": "doctorId", "value": "1" }, { "key": "date", "value": "2026-10-05" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "schedules",
+                "available"
+              ],
+              "query": [
+                {
+                  "key": "doctorId",
+                  "value": "1"
+                },
+                {
+                  "key": "date",
+                  "value": "{{testDate}}"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/schedules/available?doctorId=1&date={{testDate}}"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = new Date();",
+                  "d.setHours(12, 0, 0, 0);",
+                  "d.setDate(d.getDate() + 2);",
+                  "while (d.getDay() !== 1) { d.setDate(d.getDate() + 1); }",
+                  "d.setDate(d.getDate() + 7 * Math.floor(Math.random() * 8));",
+                  "const fmt = (x) => x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0');",
+                  "pm.collectionVariables.set('testDate', fmt(d));",
+                  "const t = new Date(d); t.setDate(t.getDate() + 1);",
+                  "pm.collectionVariables.set('testDateTuesday', fmt(t));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const slots = pm.response.json();",
+                  "pm.test('Hay al menos 3 horarios libres (si falla, vuelve a correr)', () => pm.expect(slots.length).to.be.at.least(3));",
+                  "pm.collectionVariables.set('slotA', slots[0].time);",
+                  "pm.collectionVariables.set('slotB', slots[1].time);",
+                  "pm.collectionVariables.set('slotC', slots[2].time);"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "3.2 Crear cita (OK)",
-          "event": [{ "listen": "test", "script": { "exec": [
-            "pm.test('Status 200', () => pm.response.to.have.status(200));",
-            "const json = pm.response.json();",
-            "pm.test('Status inicial PENDIENTE', () => pm.expect(json.status).to.eql('PENDIENTE'));",
-            "pm.collectionVariables.set('createdAppointmentId', json.id);"
-          ]}}],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{tokenPaciente}}" }
-            ],
-            "body": { "mode": "raw", "raw": "{\n  \"doctorId\": 1,\n  \"appointmentDate\": \"2026-10-05\",\n  \"appointmentTime\": \"08:00:00\",\n  \"reason\": \"Chequeo general\"\n}" },
-            "url": { "raw": "{{baseUrl}}/api/v1/appointments", "host": ["{{baseUrl}}"], "path": ["api","v1","appointments"] }
-          }
-        },
-        {
-          "name": "3.3 Crear cita - MISMO slot (400 esperado, ya ocupado)",
-          "event": [{ "listen": "test", "script": { "exec": [
-            "pm.test('Status 400 - slot ocupado', () => pm.response.to.have.status(400));"
-          ]}}],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{tokenPaciente}}" }
-            ],
-            "body": { "mode": "raw", "raw": "{\n  \"doctorId\": 1,\n  \"appointmentDate\": \"2026-10-05\",\n  \"appointmentTime\": \"08:00:00\",\n  \"reason\": \"Intento de duplicar el slot\"\n}" },
-            "url": { "raw": "{{baseUrl}}/api/v1/appointments", "host": ["{{baseUrl}}"], "path": ["api","v1","appointments"] }
-          }
-        },
-        {
-          "name": "3.4 Crear cita - fecha en el pasado (400 esperado, @Future)",
-          "event": [{ "listen": "test", "script": { "exec": [
-            "pm.test('Status 400 - validacion', () => pm.response.to.have.status(400));",
-            "pm.test('Error de validacion', () => pm.expect(pm.response.json().error).to.eql('Validation Error'));"
-          ]}}],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{tokenPaciente}}" }
-            ],
-            "body": { "mode": "raw", "raw": "{\n  \"doctorId\": 1,\n  \"appointmentDate\": \"2020-01-01\",\n  \"appointmentTime\": \"08:00:00\",\n  \"reason\": \"Fecha invalida a proposito\"\n}" },
-            "url": { "raw": "{{baseUrl}}/api/v1/appointments", "host": ["{{baseUrl}}"], "path": ["api","v1","appointments"] }
-          }
-        },
-        {
-          "name": "3.5 Ver mi historial de citas",
-          "event": [{ "listen": "test", "script": { "exec": [
-            "pm.test('Status 200', () => pm.response.to.have.status(200));",
-            "const ids = pm.response.json().map(a => a.id);",
-            "pm.test('La cita creada aparece', () => pm.expect(ids).to.include(pm.collectionVariables.get('createdAppointmentId')));"
-          ]}}],
+          "name": "3.1b Disponibilidad por dia en un rango, para el calendario (200)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{tokenPaciente}}" }],
-            "url": { "raw": "{{baseUrl}}/api/v1/appointments/my-history", "host": ["{{baseUrl}}"], "path": ["api","v1","appointments","my-history"] }
-          }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "schedules",
+                "available",
+                "range"
+              ],
+              "query": [
+                {
+                  "key": "doctorId",
+                  "value": "1"
+                },
+                {
+                  "key": "startDate",
+                  "value": "{{testDate}}"
+                },
+                {
+                  "key": "endDate",
+                  "value": "{{testDateTuesday}}"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/schedules/available/range?doctorId=1&startDate={{testDate}}&endDate={{testDateTuesday}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const days = pm.response.json();",
+                  "pm.test('Devuelve los 2 dias pedidos', () => pm.expect(days.length).to.eql(2));",
+                  "pm.test('El lunes tiene cupo y el martes no', () => { pm.expect(days[0].availableSlots).to.be.above(0); pm.expect(days[1].availableSlots).to.eql(0); });"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "3.6 Historial SIN token (401 esperado)",
-          "event": [{ "listen": "test", "script": { "exec": [
-            "pm.test('Status 401 sin token', () => pm.response.to.have.status(401));"
-          ]}}],
+          "name": "3.1c Rango de mas de 62 dias (400)",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/api/v1/appointments/my-history", "host": ["{{baseUrl}}"], "path": ["api","v1","appointments","my-history"] }
-          }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "schedules",
+                "available",
+                "range"
+              ],
+              "query": [
+                {
+                  "key": "doctorId",
+                  "value": "1"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2030-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2030-12-31"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/schedules/available/range?doctorId=1&startDate=2030-01-01&endDate=2030-12-31"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.2 Crear cita (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctorId\": 1,\n  \"appointmentDate\": \"{{testDate}}\",\n  \"appointmentTime\": \"{{slotA}}\",\n  \"reason\": \"Chequeo general\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('Queda PENDIENTE', () => pm.expect(json.status).to.eql('PENDIENTE'));",
+                  "pm.test('Incluye doctorId', () => pm.expect(json.doctorId).to.eql(1));",
+                  "pm.collectionVariables.set('appointmentId', json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.3 Crear cita en el MISMO horario (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctorId\": 1,\n  \"appointmentDate\": \"{{testDate}}\",\n  \"appointmentTime\": \"{{slotA}}\",\n  \"reason\": \"Intento de duplicar el horario\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.4 Crear cita fuera del horario del medico, 03:00 (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctorId\": 1,\n  \"appointmentDate\": \"{{testDate}}\",\n  \"appointmentTime\": \"03:00:00\",\n  \"reason\": \"Madrugada\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.5 Crear cita un dia que el medico no atiende, martes (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctorId\": 1,\n  \"appointmentDate\": \"{{testDateTuesday}}\",\n  \"appointmentTime\": \"08:00:00\",\n  \"reason\": \"Dia sin atencion\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.6 Crear cita con fecha pasada (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctorId\": 1,\n  \"appointmentDate\": \"2020-01-01\",\n  \"appointmentTime\": \"08:00:00\",\n  \"reason\": \"Fecha invalida\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Error de validacion', () => pm.expect(pm.response.json().error).to.eql('Validation Error'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.7 Reagendar a otro horario libre (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{appointmentId}}",
+                "reschedule"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/{{appointmentId}}/reschedule"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentDate\": \"{{testDate}}\",\n  \"appointmentTime\": \"{{slotB}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Cambio la hora', () => pm.expect(json.appointmentTime.slice(0, 5)).to.eql(pm.collectionVariables.get('slotB').slice(0, 5)));",
+                  "pm.test('Sigue PENDIENTE', () => pm.expect(json.status).to.eql('PENDIENTE'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.8 Reagendar fuera del horario del medico (409)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{appointmentId}}",
+                "reschedule"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/{{appointmentId}}/reschedule"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentDate\": \"{{testDate}}\",\n  \"appointmentTime\": \"03:00:00\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.9 Otro paciente intenta cancelar mi cita (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenNuevoPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{appointmentId}}",
+                "cancel"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/{{appointmentId}}/cancel"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"No deberia poder\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.10 Reservar un horario para luego cancelarlo (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctorId\": 1,\n  \"appointmentDate\": \"{{testDate}}\",\n  \"appointmentTime\": \"{{slotC}}\",\n  \"reason\": \"Cita que se cancelara\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('cancelId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.11 Cancelar mi cita (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{cancelId}}",
+                "cancel"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/{{cancelId}}/cancel"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Tuve un imprevisto\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Queda CANCELADA con motivo', () => { pm.expect(json.status).to.eql('CANCELADA'); pm.expect(json.cancellationReason).to.eql('Tuve un imprevisto'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.12 Cancelar una cita que ya esta cancelada (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{cancelId}}",
+                "cancel"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/{{cancelId}}/cancel"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.13 Reservar OTRA VEZ el horario cancelado (201: el horario quedo libre)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctorId\": 1,\n  \"appointmentDate\": \"{{testDate}}\",\n  \"appointmentTime\": \"{{slotC}}\",\n  \"reason\": \"Misma hora, ahora que esta libre\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('cancelId2', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.14 Cancelar la cita de limpieza (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{cancelId2}}",
+                "cancel"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/{{cancelId2}}/cancel"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Limpieza de datos de prueba\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.15 Ver mi historial",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "my-history"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/my-history"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const list = pm.response.json();",
+                  "pm.test('Aparece la cita principal', () => pm.expect(list.map(a => String(a.id))).to.include(String(pm.collectionVariables.get('appointmentId'))));",
+                  "pm.test('Aparece la cita cancelada', () => { const c = list.find(a => String(a.id) === String(pm.collectionVariables.get('cancelId'))); pm.expect(c.status).to.eql('CANCELADA'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.16 Historial SIN token (401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "my-history"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/my-history"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
-      "name": "4. Doctor - Diagnostico y Recetas",
+      "name": "4. Doctor: agenda, diagnostico y receta",
       "item": [
         {
-          "name": "4.1 Registrar diagnostico (OK, cita propia)",
-          "event": [{ "listen": "test", "script": { "exec": [
-            "pm.test('Status 200', () => pm.response.to.have.status(200));",
-            "pm.test('Tipo DIAGNOSTICO', () => pm.expect(pm.response.json().type).to.eql('DIAGNOSTICO'));"
-          ]}}],
+          "name": "4.1 Mi agenda en un rango de fechas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDoctor}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "my-agenda-range"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "{{testDate}}"
+                },
+                {
+                  "key": "endDate",
+                  "value": "{{testDateTuesday}}"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/my-agenda-range?startDate={{testDate}}&endDate={{testDateTuesday}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Incluye la cita', () => pm.expect(pm.response.json().map(a => String(a.id))).to.include(String(pm.collectionVariables.get('appointmentId'))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.1b Diagnostico en una cita FUTURA (409: aun no ocurre)",
           "request": {
             "method": "PUT",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{tokenDoctor}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDoctor}}"
+              }
             ],
-            "body": { "mode": "raw", "raw": "{\n  \"type\": \"DIAGNOSTICO\",\n  \"content\": \"Paciente presenta cuadro gripal leve. Reposo 3 dias, buena hidratacion.\"\n}" },
             "url": {
-              "raw": "{{baseUrl}}/api/v1/appointments/{{createdAppointmentId}}/diagnosis",
-              "host": ["{{baseUrl}}"], "path": ["api","v1","appointments","{{createdAppointmentId}}","diagnosis"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{appointmentId}}",
+                "diagnosis"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/{{appointmentId}}/diagnosis"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"DIAGNOSTICO\",\n  \"content\": \"No se puede documentar una cita que aun no ocurre\"\n}"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));",
+                  "pm.test('Menciona que aun no ocurre', () => pm.expect(pm.response.json().message).to.include('aun no ocurre'));"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "4.2 Registrar receta (OK, misma cita)",
-          "event": [{ "listen": "test", "script": { "exec": [
-            "pm.test('Status 200', () => pm.response.to.have.status(200));",
-            "pm.test('Tipo RECETA', () => pm.expect(pm.response.json().type).to.eql('RECETA'));"
-          ]}}],
+          "name": "4.1c Buscar una cita PASADA de paciente1 (la siembra seed-citas-pasadas.sql)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDoctor}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "my-agenda-range"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2020-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "{{yesterday}}"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/my-agenda-range?startDate=2020-01-01&endDate={{yesterday}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const y = new Date(); y.setDate(y.getDate() - 1);",
+                  "pm.collectionVariables.set('yesterday', y.getFullYear() + '-' + String(y.getMonth() + 1).padStart(2, '0') + '-' + String(y.getDate()).padStart(2, '0'));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const nombre = pm.collectionVariables.get('pacienteNombre');",
+                  "const candidatas = pm.response.json().filter(a => a.status !== 'CANCELADA' && a.patientName === nombre).sort((a, b) => (a.appointmentDate + a.appointmentTime).localeCompare(b.appointmentDate + b.appointmentTime));",
+                  "pm.test('Hay una cita pasada de paciente1 (si falla, corre seed-citas-pasadas.sql)', () => pm.expect(candidatas.length).to.be.above(0));",
+                  "if (candidatas.length) { pm.collectionVariables.set('pastApptId', candidatas[candidatas.length - 1].id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.2 Registrar diagnostico (200)",
           "request": {
             "method": "PUT",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{tokenDoctor}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDoctor}}"
+              }
             ],
-            "body": { "mode": "raw", "raw": "{\n  \"type\": \"RECETA\",\n  \"content\": \"Paracetamol 500mg cada 8 horas por 3 dias.\"\n}" },
             "url": {
-              "raw": "{{baseUrl}}/api/v1/appointments/{{createdAppointmentId}}/diagnosis",
-              "host": ["{{baseUrl}}"], "path": ["api","v1","appointments","{{createdAppointmentId}}","diagnosis"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{pastApptId}}",
+                "diagnosis"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/{{pastApptId}}/diagnosis"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"DIAGNOSTICO\",\n  \"content\": \"Cuadro gripal leve. Reposo 3 dias.\"\n}"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Tipo DIAGNOSTICO', () => pm.expect(json.type).to.eql('DIAGNOSTICO'));",
+                  "pm.collectionVariables.set('documentId', json.id);"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "4.3 Registrar diagnostico - CITA AJENA (400 esperado, seguridad)",
-          "event": [{ "listen": "test", "script": { "exec": [
-            "pm.test('Status 400 - no es su cita', () => pm.response.to.have.status(400));",
-            "pm.test('Mensaje de seguridad', () => pm.expect(pm.response.json().message).to.include('no es tuya'));"
-          ]}}],
+          "name": "4.3 Registrar receta (200)",
           "request": {
             "method": "PUT",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{tokenOtroDoctor}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDoctor}}"
+              }
             ],
-            "body": { "mode": "raw", "raw": "{\n  \"type\": \"DIAGNOSTICO\",\n  \"content\": \"La Dra. Lopez intentando diagnosticar una cita ajena\"\n}" },
             "url": {
-              "raw": "{{baseUrl}}/api/v1/appointments/{{createdAppointmentId}}/diagnosis",
-              "host": ["{{baseUrl}}"], "path": ["api","v1","appointments","{{createdAppointmentId}}","diagnosis"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{pastApptId}}",
+                "diagnosis"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/{{pastApptId}}/diagnosis"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"RECETA\",\n  \"content\": \"Paracetamol 500 mg cada 8 horas por 3 dias.\"\n}"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Tipo RECETA', () => pm.expect(pm.response.json().type).to.eql('RECETA'));"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "4.4 Diagnostico como PACIENTE (403/401 esperado, rol incorrecto)",
-          "event": [{ "listen": "test", "script": { "exec": [
-            "pm.test('Status 401 o 403 - rol incorrecto', () => pm.expect([401,403]).to.include(pm.response.code));"
-          ]}}],
+          "name": "4.4 Ver los documentos de la cita (doctor)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDoctor}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{pastApptId}}",
+                "documents"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/{{pastApptId}}/documents"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Tiene al menos 2 documentos', () => pm.expect(pm.response.json().length).to.be.at.least(2));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Diagnostico en cita de OTRO doctor (403)",
           "request": {
             "method": "PUT",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{tokenPaciente}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenOtroDoctor}}"
+              }
             ],
-            "body": { "mode": "raw", "raw": "{\n  \"type\": \"DIAGNOSTICO\",\n  \"content\": \"Un paciente no deberia poder hacer esto\"\n}" },
             "url": {
-              "raw": "{{baseUrl}}/api/v1/appointments/{{createdAppointmentId}}/diagnosis",
-              "host": ["{{baseUrl}}"], "path": ["api","v1","appointments","{{createdAppointmentId}}","diagnosis"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{pastApptId}}",
+                "diagnosis"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/{{pastApptId}}/diagnosis"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"DIAGNOSTICO\",\n  \"content\": \"La Dra. Lopez intentando diagnosticar una cita ajena\"\n}"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Mensaje claro', () => pm.expect(pm.response.json().message).to.include('no es tuya'));"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "4.5 Diagnostico SIN token (401 esperado)",
-          "event": [{ "listen": "test", "script": { "exec": [
-            "pm.test('Status 401 sin token', () => pm.response.to.have.status(401));"
-          ]}}],
+          "name": "4.6 Diagnostico como PACIENTE (403, rol incorrecto)",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"type\": \"DIAGNOSTICO\",\n  \"content\": \"Sin autenticar\"\n}" },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/appointments/{{createdAppointmentId}}/diagnosis",
-              "host": ["{{baseUrl}}"], "path": ["api","v1","appointments","{{createdAppointmentId}}","diagnosis"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{pastApptId}}",
+                "diagnosis"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/{{pastApptId}}/diagnosis"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"DIAGNOSTICO\",\n  \"content\": \"Un paciente no deberia poder\"\n}"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.7 Diagnostico SIN token (401)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{pastApptId}}",
+                "diagnosis"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/{{pastApptId}}/diagnosis"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"DIAGNOSTICO\",\n  \"content\": \"Sin autenticar\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.8 Diagnostico en una cita CANCELADA (409)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDoctor}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{cancelId}}",
+                "diagnosis"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/{{cancelId}}/diagnosis"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"DIAGNOSTICO\",\n  \"content\": \"No se puede documentar una cita cancelada\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Paciente: ver sus documentos",
+      "item": [
+        {
+          "name": "5.1 Ver diagnostico y receta de mi cita (200)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{pastApptId}}",
+                "documents"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/{{pastApptId}}/documents"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Tiene al menos 2 documentos', () => pm.expect(pm.response.json().length).to.be.at.least(2));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.2 Otro paciente intenta ver mis documentos (403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenNuevoPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{pastApptId}}",
+                "documents"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/{{pastApptId}}/documents"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.3 Descargar PDF de un documento sin archivo (404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "documents",
+                "{{documentId}}",
+                "file"
+              ],
+              "raw": "{{baseUrl}}/api/v1/documents/{{documentId}}/file"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.4 Otro paciente intenta descargar (403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenNuevoPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "documents",
+                "{{documentId}}",
+                "file"
+              ],
+              "raw": "{{baseUrl}}/api/v1/documents/{{documentId}}/file"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. Paciente: perfil y contrasena (usa el paciente recien registrado)",
+      "item": [
+        {
+          "name": "6.1 Ver mi perfil (200)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenNuevoPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "me"
+              ],
+              "raw": "{{baseUrl}}/api/v1/patients/me"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Es el paciente registrado', () => pm.expect(json.username).to.eql('paciente.' + pm.collectionVariables.get('uniq')));",
+                  "pm.test('Trae los datos del registro', () => { pm.expect(json.bloodType).to.eql('O+'); pm.expect(json.birthDate).to.eql('1998-05-20'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.2 Editar mi perfil (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenNuevoPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "me"
+              ],
+              "raw": "{{baseUrl}}/api/v1/patients/me"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"paciente.{{uniq}}@correo.com\",\n  \"firstName\": \"Paciente\",\n  \"lastName\": \"Editado\",\n  \"phone\": \"5555-0199\",\n  \"birthDate\": \"1998-05-20\",\n  \"address\": \"Avenida nueva 456\",\n  \"bloodType\": \"A+\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Se guardaron los cambios', () => { pm.expect(json.lastName).to.eql('Editado'); pm.expect(json.phone).to.eql('5555-0199'); pm.expect(json.bloodType).to.eql('A+'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.3 Editar con el email de OTRO usuario (409; usa el email de paciente1 del schema.sql)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenNuevoPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "me"
+              ],
+              "raw": "{{baseUrl}}/api/v1/patients/me"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"paciente1@correo.com\",\n  \"firstName\": \"Paciente\",\n  \"lastName\": \"Editado\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.4 Editar con tipo de sangre invalido (400)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenNuevoPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "me"
+              ],
+              "raw": "{{baseUrl}}/api/v1/patients/me"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"paciente.{{uniq}}@correo.com\",\n  \"firstName\": \"Paciente\",\n  \"lastName\": \"Editado\",\n  \"bloodType\": \"Z+\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.5 Un doctor no puede usar el perfil de paciente (403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDoctor}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "me"
+              ],
+              "raw": "{{baseUrl}}/api/v1/patients/me"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.6 Cambiar contrasena con la actual INCORRECTA (400, nunca 401)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenNuevoPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me",
+                "password"
+              ],
+              "raw": "{{baseUrl}}/api/v1/users/me/password"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"no-es-esa\",\n  \"newPassword\": \"ClaveNueva123\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.7 Cambiar contrasena (204)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenNuevoPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me",
+                "password"
+              ],
+              "raw": "{{baseUrl}}/api/v1/users/me/password"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"Clave12345\",\n  \"newPassword\": \"ClaveNueva123\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.8 Login con la contrasena VIEJA (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ],
+              "raw": "{{baseUrl}}/api/v1/auth/login"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"paciente.{{uniq}}\",\n  \"password\": \"Clave12345\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.9 Login con la contrasena NUEVA (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ],
+              "raw": "{{baseUrl}}/api/v1/auth/login"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"paciente.{{uniq}}\",\n  \"password\": \"ClaveNueva123\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. Secretaria: pacientes y agenda general (requiere seed-secretaria.sql)",
+      "item": [
+        {
+          "name": "7.1 Login secretaria (OK)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ],
+              "raw": "{{baseUrl}}/api/v1/auth/login"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"secretaria1\",\n  \"password\": \"password\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('tokenSecretaria', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.2 Un paciente NO puede buscar pacientes (403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "paciente1"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/patients?search=paciente1"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.3 Buscar a paciente1",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSecretaria}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "paciente1"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/patients?search=paciente1"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const found = pm.response.json().find(p => p.username === 'paciente1');",
+                  "pm.test('Aparece paciente1', () => pm.expect(found).to.not.be.undefined);",
+                  "if (found) { pm.collectionVariables.set('patient1Id', found.patientId); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.4 Buscar al paciente recien registrado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSecretaria}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "paciente.{{uniq}}"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/patients?search=paciente.{{uniq}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const list = pm.response.json();",
+                  "pm.test('Lo encuentra por usuario', () => pm.expect(list.length).to.be.above(0));",
+                  "if (list.length) { pm.collectionVariables.set('newPatientId', list[0].patientId); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.5 Ver un paciente por id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSecretaria}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "{{patient1Id}}"
+              ],
+              "raw": "{{baseUrl}}/api/v1/patients/{{patient1Id}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Es paciente1', () => pm.expect(pm.response.json().username).to.eql('paciente1'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.6 Registrar un paciente (201, devuelve contrasena temporal)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSecretaria}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ],
+              "raw": "{{baseUrl}}/api/v1/patients"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"walkin.{{uniq}}@correo.com\",\n  \"firstName\": \"Pedro\",\n  \"lastName\": \"Sin Cita\",\n  \"phone\": \"5555-0300\",\n  \"birthDate\": \"1990-03-15\",\n  \"address\": \"Atendido en recepcion\",\n  \"bloodType\": \"B+\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('Trae usuario y contrasena temporal', () => { pm.expect(json.username).to.be.a('string'); pm.expect(json.temporaryPassword.length).to.eql(12); });",
+                  "pm.collectionVariables.set('walkinUsername', json.username);",
+                  "pm.collectionVariables.set('walkinPassword', json.temporaryPassword);",
+                  "pm.collectionVariables.set('walkinPatientId', json.patient.patientId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.7 El paciente nuevo entra con la contrasena temporal (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ],
+              "raw": "{{baseUrl}}/api/v1/auth/login"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{walkinUsername}}\",\n  \"password\": \"{{walkinPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Es paciente', () => pm.expect(pm.response.json().role).to.eql('ROLE_PATIENT'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.8 Registrar un paciente con email repetido (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSecretaria}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ],
+              "raw": "{{baseUrl}}/api/v1/patients"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"walkin.{{uniq}}@correo.com\",\n  \"firstName\": \"Pedro\",\n  \"lastName\": \"Repetido\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.9 Un paciente NO puede registrar pacientes (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ],
+              "raw": "{{baseUrl}}/api/v1/patients"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"intruso.{{uniq}}@correo.com\",\n  \"firstName\": \"Intruso\",\n  \"lastName\": \"Prueba\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.10 Agendar a nombre del paciente (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSecretaria}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctorId\": 1,\n  \"patientId\": {{walkinPatientId}},\n  \"appointmentDate\": \"{{testDate}}\",\n  \"appointmentTime\": \"{{slotA}}\",\n  \"reason\": \"Agendada en recepcion\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('Queda a nombre del paciente', () => pm.expect(json.patientName).to.include('Pedro'));",
+                  "pm.collectionVariables.set('staffApptId', json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.11 Agendar sin patientId (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSecretaria}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctorId\": 1,\n  \"appointmentDate\": \"{{testDate}}\",\n  \"appointmentTime\": \"{{slotC}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.12 Un paciente NO puede agendar a nombre de otro (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctorId\": 1,\n  \"patientId\": {{walkinPatientId}},\n  \"appointmentDate\": \"{{testDate}}\",\n  \"appointmentTime\": \"{{slotC}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.13 Agenda general de la clinica (200)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSecretaria}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "{{testDate}}"
+                },
+                {
+                  "key": "endDate",
+                  "value": "{{testDateTuesday}}"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments?startDate={{testDate}}&endDate={{testDateTuesday}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const list = pm.response.json();",
+                  "pm.test('Incluye la cita de la secretaria', () => pm.expect(list.map(a => String(a.id))).to.include(String(pm.collectionVariables.get('staffApptId'))));",
+                  "pm.test('Trae datos del paciente', () => { const a = list.find(x => String(x.id) === String(pm.collectionVariables.get('staffApptId'))); pm.expect(a.patientId).to.be.a('number'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.14 Agenda general filtrada por la Dra. Lopez (solo sus citas)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSecretaria}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "{{testDate}}"
+                },
+                {
+                  "key": "endDate",
+                  "value": "{{testDateTuesday}}"
+                },
+                {
+                  "key": "doctorId",
+                  "value": "2"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments?startDate={{testDate}}&endDate={{testDateTuesday}}&doctorId=2"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Todas son del doctor 2', () => pm.expect(pm.response.json().every(a => a.doctorId === 2)).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.15 Agenda general con rango de mas de 62 dias (400)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSecretaria}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2030-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2030-12-31"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments?startDate=2030-01-01&endDate=2030-12-31"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.16 Un doctor NO ve la agenda general (403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDoctor}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "{{testDate}}"
+                },
+                {
+                  "key": "endDate",
+                  "value": "{{testDateTuesday}}"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments?startDate={{testDate}}&endDate={{testDateTuesday}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.17 La secretaria reagenda la cita (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSecretaria}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{staffApptId}}",
+                "reschedule"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/{{staffApptId}}/reschedule"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentDate\": \"{{testDate}}\",\n  \"appointmentTime\": \"{{slotC}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Cambio la hora', () => pm.expect(pm.response.json().appointmentTime.slice(0, 5)).to.eql(pm.collectionVariables.get('slotC').slice(0, 5)));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.18 La secretaria cancela la cita (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSecretaria}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{staffApptId}}",
+                "cancel"
+              ],
+              "raw": "{{baseUrl}}/api/v1/appointments/{{staffApptId}}/cancel"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"El paciente aviso que no puede asistir\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Queda CANCELADA', () => pm.expect(pm.response.json().status).to.eql('CANCELADA'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "8. Admin: usuarios, medicos, horarios y panel (requiere seed-secretaria.sql)",
+      "item": [
+        {
+          "name": "8.1 Listar usuarios (200)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "admin"
+                },
+                {
+                  "key": "role",
+                  "value": "ROLE_ADMIN"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "15"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/users?search=admin&role=ROLE_ADMIN&page=0&size=15"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Pagina con contenido', () => pm.expect(json.content.length).to.be.above(0));",
+                  "const admin = json.content.find(u => u.username === 'admin');",
+                  "pm.test('Aparece el usuario admin', () => pm.expect(admin).to.not.be.undefined);",
+                  "if (admin) { pm.collectionVariables.set('adminUserId', admin.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.2 La secretaria NO puede listar usuarios (403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSecretaria}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ],
+              "raw": "{{baseUrl}}/api/v1/users"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.3 Crear usuario secretaria (201, contrasena temporal)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ],
+              "raw": "{{baseUrl}}/api/v1/users"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"ROLE_SECRETARY\",\n  \"firstName\": \"Ana\",\n  \"lastName\": \"Prueba\",\n  \"email\": \"staff.{{uniq}}@clinica.com\",\n  \"phone\": \"5555-0400\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('Rol secretaria y contrasena temporal', () => { pm.expect(json.user.role).to.eql('ROLE_SECRETARY'); pm.expect(json.temporaryPassword.length).to.eql(12); });",
+                  "pm.collectionVariables.set('newStaffUserId', json.user.id);",
+                  "pm.collectionVariables.set('newStaffUsername', json.username);",
+                  "pm.collectionVariables.set('newStaffPassword', json.temporaryPassword);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.4 El usuario nuevo entra con la contrasena temporal (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ],
+              "raw": "{{baseUrl}}/api/v1/auth/login"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{newStaffUsername}}\",\n  \"password\": \"{{newStaffPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Es secretaria', () => pm.expect(pm.response.json().role).to.eql('ROLE_SECRETARY'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.5 Crear usuario con rol MEDICO desde aqui (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ],
+              "raw": "{{baseUrl}}/api/v1/users"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"ROLE_DOCTOR\",\n  \"firstName\": \"Medico\",\n  \"lastName\": \"Intruso\",\n  \"email\": \"doc.{{uniq}}@clinica.com\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.6 Crear usuario con email repetido (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ],
+              "raw": "{{baseUrl}}/api/v1/users"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"ROLE_SECRETARY\",\n  \"firstName\": \"Ana\",\n  \"lastName\": \"Repetida\",\n  \"email\": \"staff.{{uniq}}@clinica.com\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.7 Crear un paciente desde Usuarios (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ],
+              "raw": "{{baseUrl}}/api/v1/users"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"ROLE_PATIENT\",\n  \"firstName\": \"Paciente\",\n  \"lastName\": \"Desde Admin\",\n  \"email\": \"pac.{{uniq}}@correo.com\",\n  \"phone\": \"5555-0500\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('Es paciente con contrasena temporal', () => { pm.expect(json.user.role).to.eql('ROLE_PATIENT'); pm.expect(json.temporaryPassword).to.be.a('string'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.8 Editar usuario (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{newStaffUserId}}"
+              ],
+              "raw": "{{baseUrl}}/api/v1/users/{{newStaffUserId}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Ana\",\n  \"lastName\": \"Editada\",\n  \"email\": \"staff.{{uniq}}@clinica.com\",\n  \"phone\": \"5555-0401\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Se guardo', () => pm.expect(pm.response.json().lastName).to.eql('Editada'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.9 Desactivar usuario (200)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{newStaffUserId}}",
+                "active"
+              ],
+              "raw": "{{baseUrl}}/api/v1/users/{{newStaffUserId}}/active"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"active\": false\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Queda inactivo', () => pm.expect(pm.response.json().active).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.10 Un usuario desactivado NO puede entrar (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ],
+              "raw": "{{baseUrl}}/api/v1/auth/login"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{newStaffUsername}}\",\n  \"password\": \"{{newStaffPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.11 Reactivar usuario (200)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{newStaffUserId}}",
+                "active"
+              ],
+              "raw": "{{baseUrl}}/api/v1/users/{{newStaffUserId}}/active"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"active\": true\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.12 Restablecer contrasena (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{newStaffUserId}}",
+                "reset-password"
+              ],
+              "raw": "{{baseUrl}}/api/v1/users/{{newStaffUserId}}/reset-password"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Trae contrasena temporal', () => pm.expect(json.temporaryPassword.length).to.eql(12));",
+                  "pm.collectionVariables.set('newStaffPassword2', json.temporaryPassword);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.13 La contrasena anterior ya no sirve (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ],
+              "raw": "{{baseUrl}}/api/v1/auth/login"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{newStaffUsername}}\",\n  \"password\": \"{{newStaffPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.14 La contrasena nueva si sirve (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ],
+              "raw": "{{baseUrl}}/api/v1/auth/login"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{newStaffUsername}}\",\n  \"password\": \"{{newStaffPassword2}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.15 Un admin NO puede desactivar su propia cuenta (409)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{adminUserId}}",
+                "active"
+              ],
+              "raw": "{{baseUrl}}/api/v1/users/{{adminUserId}}/active"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"active\": false\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.16 Medicos: listado de administracion (200)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "doctors",
+                "management"
+              ],
+              "raw": "{{baseUrl}}/api/v1/doctors/management"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const list = pm.response.json();",
+                  "const d = list.find(x => String(x.doctorId) === String(pm.collectionVariables.get('createdDoctorId')));",
+                  "pm.test('Aparece el medico creado, con su estado', () => { pm.expect(d).to.not.be.undefined; pm.expect(d.active).to.eql(true); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.17 Un paciente NO ve el listado de administracion (403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "doctors",
+                "management"
+              ],
+              "raw": "{{baseUrl}}/api/v1/doctors/management"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.18 Editar datos de un medico (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "doctors",
+                "{{createdDoctorId}}"
+              ],
+              "raw": "{{baseUrl}}/api/v1/doctors/{{createdDoctorId}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Medico\",\n  \"lastName\": \"Editado\",\n  \"email\": \"dr.{{uniq}}@clinica.com\",\n  \"phone\": \"5555-0201\",\n  \"specialtyId\": 2,\n  \"licenseNumber\": \"MED-{{uniq}}\",\n  \"biography\": \"Editado desde Postman.\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Se guardo', () => pm.expect(pm.response.json().biography).to.eql('Editado desde Postman.'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.19 Editar medico con colegiado de otro (409)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "doctors",
+                "{{createdDoctorId}}"
+              ],
+              "raw": "{{baseUrl}}/api/v1/doctors/{{createdDoctorId}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Medico\",\n  \"lastName\": \"Editado\",\n  \"email\": \"dr.{{uniq}}@clinica.com\",\n  \"specialtyId\": 2,\n  \"licenseNumber\": \"MED-1001\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.20 Desactivar a un medico sin citas pendientes (200)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "doctors",
+                "{{createdDoctorId}}",
+                "active"
+              ],
+              "raw": "{{baseUrl}}/api/v1/doctors/{{createdDoctorId}}/active"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"active\": false\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Queda inactivo', () => pm.expect(pm.response.json().active).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.21 Un medico desactivado NO aparece en el listado publico",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPaciente}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "doctors"
+              ],
+              "raw": "{{baseUrl}}/api/v1/doctors"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('No aparece', () => pm.expect(pm.response.json().map(d => String(d.id))).to.not.include(String(pm.collectionVariables.get('createdDoctorId'))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.22 Reactivar al medico (200)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "doctors",
+                "{{createdDoctorId}}",
+                "active"
+              ],
+              "raw": "{{baseUrl}}/api/v1/doctors/{{createdDoctorId}}/active"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"active\": true\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.23 Desactivar a un medico con citas pendientes futuras (409)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "doctors",
+                "1",
+                "active"
+              ],
+              "raw": "{{baseUrl}}/api/v1/doctors/1/active"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"active\": false\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));",
+                  "pm.test('Explica por que', () => pm.expect(pm.response.json().message).to.include('pendiente'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.24 Horarios del medico creado: guardar el bloque del jueves",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "schedules"
+              ],
+              "query": [
+                {
+                  "key": "doctorId",
+                  "value": "{{createdDoctorId}}"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/schedules?doctorId={{createdDoctorId}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const thursday = pm.response.json().find(b => b.dayOfWeek === 4);",
+                  "pm.test('Tiene bloque del jueves', () => pm.expect(thursday).to.not.be.undefined);",
+                  "if (thursday) { pm.collectionVariables.set('blockId', thursday.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.25 Editar un bloque de horario (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "schedules",
+                "{{blockId}}"
+              ],
+              "raw": "{{baseUrl}}/api/v1/schedules/{{blockId}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dayOfWeek\": 4,\n  \"startTime\": \"09:00\",\n  \"endTime\": \"11:00\",\n  \"slotDurationMinutes\": 30\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Cambio la hora de fin', () => pm.expect(pm.response.json().endTime.slice(0, 5)).to.eql('11:00'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.26 Editar un bloque con fin antes del inicio (400)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "schedules",
+                "{{blockId}}"
+              ],
+              "raw": "{{baseUrl}}/api/v1/schedules/{{blockId}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dayOfWeek\": 4,\n  \"startTime\": \"11:00\",\n  \"endTime\": \"09:00\",\n  \"slotDurationMinutes\": 30\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.27 Guardar el bloque del lunes del Dr. Perez",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "schedules"
+              ],
+              "query": [
+                {
+                  "key": "doctorId",
+                  "value": "1"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/schedules?doctorId=1"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const monday = pm.response.json().find(b => b.dayOfWeek === 1);",
+                  "pm.test('Tiene bloque del lunes', () => pm.expect(monday).to.not.be.undefined);",
+                  "if (monday) { pm.collectionVariables.set('mondayBlockId', monday.id); pm.collectionVariables.set('mondayStart', monday.startTime.slice(0, 5)); pm.collectionVariables.set('mondayEnd', monday.endTime.slice(0, 5)); pm.collectionVariables.set('mondaySlot', monday.slotDurationMinutes); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.28 Mover el bloque del lunes dejando sin horario a una cita pendiente (409)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "schedules",
+                "{{mondayBlockId}}"
+              ],
+              "raw": "{{baseUrl}}/api/v1/schedules/{{mondayBlockId}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dayOfWeek\": 1,\n  \"startTime\": \"12:00\",\n  \"endTime\": \"13:00\",\n  \"slotDurationMinutes\": 30\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));",
+                  "pm.test('Menciona las citas', () => pm.expect(pm.response.json().message).to.include('cita'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.29 Restaurar el bloque del lunes (200, sin cambios)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "schedules",
+                "{{mondayBlockId}}"
+              ],
+              "raw": "{{baseUrl}}/api/v1/schedules/{{mondayBlockId}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dayOfWeek\": 1,\n  \"startTime\": \"{{mondayStart}}\",\n  \"endTime\": \"{{mondayEnd}}\",\n  \"slotDurationMinutes\": {{mondaySlot}}\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.30 Eliminar un bloque de horario (204)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "schedules",
+                "{{blockId}}"
+              ],
+              "raw": "{{baseUrl}}/api/v1/schedules/{{blockId}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.31 Queda un solo bloque",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "schedules"
+              ],
+              "query": [
+                {
+                  "key": "doctorId",
+                  "value": "{{createdDoctorId}}"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/schedules?doctorId={{createdDoctorId}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Un bloque', () => pm.expect(pm.response.json().length).to.eql(1));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.32 Resumen del panel (200)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "summary"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "{{reportStart}}"
+                },
+                {
+                  "key": "endDate",
+                  "value": "{{reportEnd}}"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/reports/summary?startDate={{reportStart}}&endDate={{reportEnd}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const fmt = (x) => x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0');",
+                  "const a = new Date(); a.setDate(a.getDate() - 30);",
+                  "const b = new Date(); b.setDate(b.getDate() + 120);",
+                  "pm.collectionVariables.set('reportStart', fmt(a));",
+                  "pm.collectionVariables.set('reportEnd', fmt(b));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test('Hay citas en el rango', () => pm.expect(r.totalAppointments).to.be.above(0));",
+                  "pm.test('Los estados suman el total', () => pm.expect(r.pending + r.completed + r.cancelled + r.unattended).to.eql(r.totalAppointments));",
+                  "pm.test('Trae desglose por especialidad, medico y dia', () => { pm.expect(r.bySpecialty).to.be.an('array'); pm.expect(r.byDoctor).to.be.an('array'); pm.expect(r.byDay).to.be.an('array'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.33 Resumen con rango de mas de 366 dias (400)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "summary"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2020-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2026-12-31"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/reports/summary?startDate=2020-01-01&endDate=2026-12-31"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.34 La secretaria NO ve el panel (403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSecretaria}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "summary"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "{{reportStart}}"
+                },
+                {
+                  "key": "endDate",
+                  "value": "{{reportEnd}}"
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/reports/summary?startDate={{reportStart}}&endDate={{reportEnd}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
         }
       ]
     }

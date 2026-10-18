@@ -1,0 +1,23 @@
+button.calendar-chip {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+
+  &.calendar-chip--selected {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 1px;
+  }
+}
+
+.calendar-chip__doctor {
+  display: block;
+  opacity: 0.75;
+  font-size: 0.66rem;
+}
+
+.calendar-day {
+  cursor: default;
+}

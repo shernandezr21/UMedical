@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../api.config';
@@ -51,4 +51,14 @@ export class AppointmentService {
   downloadDocumentFile(documentId: number): Observable<Blob> {
     return this.http.get(`${API_BASE_URL}/documents/${documentId}/file`, { responseType: 'blob' });
   }
+
+  // ---- Secretaria y admin ----
+  getClinicAgenda(startDate: string, endDate: string, doctorId?: number): Observable<AppointmentResponse[]> {
+    let params = new HttpParams().set('startDate', startDate).set('endDate', endDate);
+    if (doctorId != null) {
+      params = params.set('doctorId', doctorId);
+    }
+    return this.http.get<AppointmentResponse[]>(`${API_BASE_URL}/appointments`, { params });
+  }
+
 }

@@ -1,0 +1,126 @@
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+  <div>
+    <h2 class="page-title">Medicos</h2>
+    <p class="page-subtitle">Administra los datos, el estado y los horarios de cada medico.</p>
+  </div>
+  <a class="btn btn-primary" routerLink="/dashboard/doctores/nuevo">Nuevo medico</a>
+</div>
+
+@if (errorMessage()) {
+  <div class="alert alert-error">{{ errorMessage() }}</div>
+}
+@if (successMessage()) {
+  <div class="alert alert-success">{{ successMessage() }}</div>
+}
+
+<div class="field-row" style="grid-template-columns: 2fr 1fr; margin-bottom: 0.5rem;">
+  <label class="field">
+    <span>Buscar por nombre, especialidad, colegiado o correo</span>
+    <input type="search" (input)="onQuery($event)" />
+  </label>
+  <label class="field">
+    <span>Estado</span>
+    <select (change)="onActiveFilter($event)">
+      <option value="all">Todos</option>
+      <option value="active">Activos</option>
+      <option value="inactive">Inactivos</option>
+    </select>
+  </label>
+</div>
+
+@if (isLoading()) {
+  <p class="muted">Cargando...</p>
+} @else {
+  @for (d of filtered(); track d.doctorId) {
+    <div class="card" style="margin-bottom: 0.9rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+        <div style="display: flex; gap: 0.9rem; align-items: center;">
+          <span class="avatar">{{ initials(d) }}</span>
+          <div>
+            <p style="font-weight: 500;">
+              {{ d.firstName }} {{ d.lastName }}
+              <span [class]="d.active ? 'badge badge-completada' : 'badge badge-cancelada'" style="margin-left: 0.4rem;">
+                {{ d.active ? 'Activo' : 'Inactivo' }}
+              </span>
+            </p>
+            <p class="muted">{{ d.specialtyName }} · Colegiado {{ d.licenseNumber }}</p>
+            <p class="muted">{{ d.email }}{{ d.phone ? ' · ' + d.phone : '' }} · usuario {{ d.username }}</p>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary" (click)="startEdit(d)">Editar datos</button>
+          <a class="btn btn-secondary" [routerLink]="['/dashboard/doctores', d.doctorId, 'horarios']">Horarios</a>
+          <button type="button" class="btn btn-secondary" (click)="toggleActive(d)">
+            {{ d.active ? 'Desactivar' : 'Activar' }}
+          </button>
+        </div>
+      </div>
+
+      @if (editingId() === d.doctorId) {
+        <div class="panel">
+          @if (editError()) {
+            <div class="alert alert-error">{{ editError() }}</div>
+          }
+          <form [formGroup]="editForm" (ngSubmit)="saveEdit(d)" novalidate>
+            <div class="field-row">
+              <label class="field" [class.field--error]="errorText('firstName')">
+                <span>Nombre</span>
+                <input type="text" formControlName="firstName" />
+                @if (errorText('firstName'); as msg) { <p class="field__hint">{{ msg }}</p> }
+              </label>
+              <label class="field" [class.field--error]="errorText('lastName')">
+                <span>Apellido</span>
+                <input type="text" formControlName="lastName" />
+                @if (errorText('lastName'); as msg) { <p class="field__hint">{{ msg }}</p> }
+              </label>
+            </div>
+
+            <div class="field-row">
+              <label class="field" [class.field--error]="errorText('email')">
+                <span>Correo electronico</span>
+                <input type="email" formControlName="email" />
+                @if (errorText('email'); as msg) { <p class="field__hint">{{ msg }}</p> }
+              </label>
+              <label class="field" [class.field--error]="errorText('phone')">
+                <span>Telefono</span>
+                <input type="text" formControlName="phone" />
+                @if (errorText('phone'); as msg) { <p class="field__hint">{{ msg }}</p> }
+              </label>
+            </div>
+
+            <div class="field-row">
+              <label class="field" [class.field--error]="errorText('specialtyId')">
+                <span>Especialidad</span>
+                <select formControlName="specialtyId">
+                  @for (s of specialties(); track s.id) {
+                    <option [ngValue]="s.id">{{ s.name }}</option>
+                  }
+                </select>
+              </label>
+              <label class="field" [class.field--error]="errorText('licenseNumber')">
+                <span>Numero de colegiado</span>
+                <input type="text" formControlName="licenseNumber" />
+                @if (errorText('licenseNumber'); as msg) { <p class="field__hint">{{ msg }}</p> }
+              </label>
+            </div>
+
+            <label class="field">
+              <span>Biografia</span>
+              <textarea formControlName="biography"></textarea>
+            </label>
+
+            <div style="display: flex; gap: 0.6rem;">
+              <button type="submit" class="btn btn-primary">Guardar cambios</button>
+              <button type="button" class="btn btn-secondary" (click)="cancelEdit()">Cancelar</button>
+            </div>
+          </form>
+        </div>
+      }
+    </div>
+  } @empty {
+    <div class="card">
+      <p class="muted">No hay medicos que coincidan con los filtros.</p>
+    </div>
+  }
+}

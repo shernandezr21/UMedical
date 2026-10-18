@@ -14,6 +14,10 @@ public class AppointmentRequest {
     @NotNull(message = "El doctorId es obligatorio")
     private Long doctorId;
 
+    @Schema(description = "Solo para ADMIN y SECRETARY: id del paciente (GET /api/v1/patients). Un paciente no lo envia.",
+            example = "1")
+    private Long patientId;
+
     @Schema(description = "Fecha de la cita (yyyy-MM-dd)", example = "2026-11-02")
     @NotNull(message = "La fecha es obligatoria")
     @FutureOrPresent(message = "La fecha no puede estar en el pasado")
@@ -29,6 +33,8 @@ public class AppointmentRequest {
 
     public Long getDoctorId() { return doctorId; }
     public void setDoctorId(Long doctorId) { this.doctorId = doctorId; }
+    public Long getPatientId() { return patientId; }
+    public void setPatientId(Long patientId) { this.patientId = patientId; }
     public LocalDate getAppointmentDate() { return appointmentDate; }
     public void setAppointmentDate(LocalDate appointmentDate) { this.appointmentDate = appointmentDate; }
     public LocalTime getAppointmentTime() { return appointmentTime; }
@@ -36,35 +42,3 @@ public class AppointmentRequest {
     public String getReason() { return reason; }
     public void setReason(String reason) { this.reason = reason; }
 }
-
-// package com.umedical.umedical.dto;
-
-// import jakarta.validation.constraints.Future;
-// import jakarta.validation.constraints.NotNull;
-
-// import java.time.LocalDate;
-// import java.time.LocalTime;
-
-// public class AppointmentRequest {
-
-//     @NotNull(message = "El doctorId es obligatorio")
-//     private Long doctorId;
-
-//     @NotNull(message = "La fecha es obligatoria")
-//     @Future(message = "La fecha debe ser en el futuro")
-//     private LocalDate appointmentDate;
-
-//     @NotNull(message = "La hora es obligatoria")
-//     private LocalTime appointmentTime;
-
-//     private String reason;
-
-//     public Long getDoctorId() { return doctorId; }
-//     public void setDoctorId(Long doctorId) { this.doctorId = doctorId; }
-//     public LocalDate getAppointmentDate() { return appointmentDate; }
-//     public void setAppointmentDate(LocalDate appointmentDate) { this.appointmentDate = appointmentDate; }
-//     public LocalTime getAppointmentTime() { return appointmentTime; }
-//     public void setAppointmentTime(LocalTime appointmentTime) { this.appointmentTime = appointmentTime; }
-//     public String getReason() { return reason; }
-//     public void setReason(String reason) { this.reason = reason; }
-// }
