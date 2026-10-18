@@ -1,0 +1,129 @@
+<h2 class="page-title">Mis citas</h2>
+<p class="page-subtitle">Tus proximas citas, tu historial y los documentos de cada consulta.</p>
+
+@if (errorMessage()) {
+  <div class="alert alert-error">{{ errorMessage() }}</div>
+}
+@if (successMessage()) {
+  <div class="alert alert-success">{{ successMessage() }}</div>
+}
+
+<div class="tabs">
+  <button type="button" class="tab" [class.tab--active]="tab() === 'proximas'" (click)="tab.set('proximas')">
+    Proximas ({{ upcoming().length }})
+  </button>
+  <button type="button" class="tab" [class.tab--active]="tab() === 'historial'" (click)="tab.set('historial')">
+    Historial ({{ history().length }})
+  </button>
+  <a class="btn btn-primary" style="margin-left: auto; align-self: center;" routerLink="/dashboard/agendar">
+    Agendar cita
+  </a>
+</div>
+
+@if (isLoading()) {
+  <p class="muted">Cargando...</p>
+} @else {
+  @for (a of visible(); track a.id) {
+    <div class="card appt-card" [class]="'appt-card--' + a.status.toLowerCase()" style="margin-bottom: 1rem;">
+
+      <div style="display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start;">
+        <div style="display: flex; gap: 0.8rem;">
+          <span class="avatar">{{ initials(a.doctorName) }}</span>
+          <div>
+            <p style="font-weight: 500; font-size: 1.05rem;">{{ a.doctorName }}</p>
+            <p class="muted">{{ a.specialty }}</p>
+          </div>
+        </div>
+        <span [class]="badgeClass(a)">{{ statusLabel(a) }}</span>
+      </div>
+
+      <p style="margin-top: 0.9rem;">{{ dateLabel(a) }} · {{ a.appointmentTime.slice(0, 5) }}</p>
+      @if (a.reason) {
+        <p class="muted" style="margin-top: 0.25rem;">Motivo: {{ a.reason }}</p>
+      }
+      @if (a.status === 'CANCELADA' && a.cancellationReason) {
+        <p class="muted" style="margin-top: 0.25rem;">Motivo de la cancelacion: {{ a.cancellationReason }}</p>
+      }
+
+      <!-- Acciones de una cita proxima -->
+      @if (isUpcoming(a)) {
+        @if (canModify(a)) {
+          <div style="display: flex; gap: 0.6rem; margin-top: 1rem;">
+            <button type="button" class="btn btn-secondary" (click)="startReschedule(a.id)">Reagendar</button>
+            <button type="button" class="btn btn-secondary" (click)="startCancel(a.id)">Cancelar cita</button>
+          </div>
+        } @else {
+          <p class="muted" style="margin-top: 1rem;">
+            Faltan menos de 2 horas: ya no se puede cancelar ni reagendar desde aqui.
+          </p>
+        }
+      }
+
+      @if (cancelingId() === a.id) {
+        <div class="panel">
+          <label class="field">
+            <span>Motivo (opcional)</span>
+            <textarea rows="2" maxlength="255" (input)="onCancelReasonInput($event)"></textarea>
+          </label>
+          <div style="display: flex; gap: 0.6rem;">
+            <button type="button" class="btn btn-primary" [disabled]="isBusy()" (click)="confirmCancel(a)">
+              {{ isBusy() ? 'Cancelando...' : 'Confirmar cancelacion' }}
+            </button>
+            <button type="button" class="btn btn-secondary" (click)="closePanels()">Volver</button>
+          </div>
+        </div>
+      }
+
+      @if (reschedulingId() === a.id) {
+        <div class="panel">
+          <app-slot-picker [doctorId]="a.doctorId" (slotSelected)="newSlot.set($event)" />
+          @if (newSlot(); as s) {
+            <p style="margin-top: 1rem;">Nuevo horario: <strong>{{ s.date }} a las {{ s.time.slice(0, 5) }}</strong></p>
+          }
+          <div style="display: flex; gap: 0.6rem; margin-top: 1rem;">
+            <button type="button" class="btn btn-primary" [disabled]="!newSlot() || isBusy()" (click)="confirmReschedule(a)">
+              {{ isBusy() ? 'Reagendando...' : 'Confirmar nuevo horario' }}
+            </button>
+            <button type="button" class="btn btn-secondary" (click)="closePanels()">Volver</button>
+          </div>
+        </div>
+      }
+
+      <!-- Documentos de una cita atendida -->
+      @if (a.status === 'COMPLETADA') {
+        <button type="button" class="btn btn-secondary" style="margin-top: 1rem;" (click)="toggleDocs(a)">
+          {{ openDocsId() === a.id ? 'Ocultar documentos' : 'Ver diagnostico y receta' }}
+        </button>
+
+        @if (openDocsId() === a.id) {
+          <div class="panel">
+            @if (docsLoading()) {
+              <p class="muted">Cargando documentos...</p>
+            } @else if (documents().length === 0) {
+              <p class="muted">Esta consulta no tiene documentos registrados.</p>
+            } @else {
+              @for (doc of documents(); track doc.id) {
+                <div style="background: var(--color-bg); border-radius: var(--radius-sm); padding: 0.8rem 1rem; margin-bottom: 0.6rem;">
+                  <strong style="font-size: 0.85rem;">{{ doc.type === 'RECETA' ? 'Receta' : 'Diagnostico' }}</strong>
+                  <p style="font-size: 0.9rem; margin-top: 0.25rem; white-space: pre-line;">{{ doc.content }}</p>
+                  @if (doc.fileName) {
+                    <button type="button" class="btn btn-ghost" style="color: var(--color-primary); padding-left: 0; margin-top: 0.4rem;"
+                            (click)="viewFile(doc.id)">
+                      Ver PDF: {{ doc.fileName }}
+                    </button>
+                  }
+                </div>
+              }
+            }
+          </div>
+        }
+      }
+    </div>
+  } @empty {
+    <div class="card">
+      <p class="muted">
+        {{ tab() === 'proximas' ? 'No tienes citas proximas. Puedes agendar una cuando quieras.' : 'Aun no hay citas en tu historial.' }}
+      </p>
+    </div>
+  }
+}

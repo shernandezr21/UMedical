@@ -13,15 +13,14 @@ export interface AppointmentResponse {
   cancellationReason?: string;
 }
 
-// export type AppointmentStatus = 'PENDIENTE' | 'COMPLETADA' | 'CANCELADA';
+export interface AppointmentRequest {
+  doctorId: number;
+  appointmentDate: string;
+  appointmentTime: string;
+  reason?: string;
+}
 
-// export interface AppointmentResponse {
-//   id: number;
-//   doctorName: string;
-//   specialty: string;
-//   patientName: string;
-//   appointmentDate: string;
-//   appointmentTime: string;
-//   status: AppointmentStatus;
-//   reason?: string;
-// }
+export interface RescheduleRequest {
+  appointmentDate: string;
+  appointmentTime: string;
+}

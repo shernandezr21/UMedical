@@ -11,3 +11,20 @@ export interface LoginResponse {
   role: string;
   fullName: string;
 }
+
+export interface RegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  birthDate?: string;
+  address?: string;
+  bloodType?: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}

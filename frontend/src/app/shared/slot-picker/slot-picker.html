@@ -1,0 +1,53 @@
+<div class="slot-picker">
+  <div class="slot-picker__nav">
+    <button type="button" class="btn btn-secondary" [disabled]="windowOffset() === 0" (click)="previousWindow()">
+      &larr; Anteriores
+    </button>
+    <span class="slot-picker__range">{{ rangeLabel() }}</span>
+    <button type="button" class="btn btn-secondary" [disabled]="windowOffset() >= maxWindow" (click)="nextWindow()">
+      Siguientes &rarr;
+    </button>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="alert alert-error">{{ errorMessage() }}</div>
+  }
+
+  @if (isLoadingDays()) {
+    <p class="muted">Cargando disponibilidad...</p>
+  } @else {
+    <div class="day-strip">
+      @for (day of days(); track day.iso) {
+        <button type="button" class="day-cell"
+                [class.day-cell--selected]="day.iso === selectedDate()"
+                [class.day-cell--empty]="day.available === 0"
+                [disabled]="day.available === 0"
+                (click)="selectDay(day)">
+          <span class="day-cell__name">{{ day.dayName }}</span>
+          <span class="day-cell__number">{{ day.dayNumber }}</span>
+          <span class="day-cell__month">{{ day.month }}</span>
+          <span class="day-cell__count">{{ day.available > 0 ? day.available + ' libres' : 'Sin cupo' }}</span>
+        </button>
+      }
+    </div>
+  }
+
+  @if (selectedDate()) {
+    <h4 class="slot-picker__subtitle">Horarios del {{ selectedDayLabel() }}</h4>
+    @if (isLoadingSlots()) {
+      <p class="muted">Cargando horarios...</p>
+    } @else if (slots().length === 0) {
+      <p class="muted">Ya no quedan horarios disponibles este dia.</p>
+    } @else {
+      <div class="slot-grid">
+        @for (slot of slots(); track slot.time) {
+          <button type="button" class="slot-chip"
+                  [class.slot-chip--selected]="slot.time === selectedTime()"
+                  (click)="selectTime(slot)">
+            {{ slot.time.slice(0, 5) }}
+          </button>
+        }
+      </div>
+    }
+  }
+</div>

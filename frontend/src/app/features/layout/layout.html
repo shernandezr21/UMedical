@@ -3,11 +3,6 @@
     <h1 class="shell__wordmark">U-Medical</h1>
 
     <nav class="shell__nav">
-      <!-- @if (role === 'ROLE_ADMIN') {
-        <a routerLink="/dashboard/doctores" routerLinkActive="active">Medicos</a>
-        <a routerLink="/dashboard/especialidades" routerLinkActive="active">Especialidades</a>
-        <a routerLink="/dashboard/usuarios" routerLinkActive="active">Usuarios</a>
-      } -->
       @if (role === 'ROLE_ADMIN') {
         <a routerLink="/dashboard/doctores" routerLinkActive="active">Nuevo medico</a>
         <a routerLink="/dashboard/especialidades" routerLinkActive="active">Especialidades</a>
@@ -15,11 +10,17 @@
       @if (role === 'ROLE_DOCTOR') {
         <a routerLink="/dashboard/mi-agenda" routerLinkActive="active">Mi agenda</a>
       }
+      @if (role === 'ROLE_PATIENT') {
+        <a routerLink="/dashboard/mis-citas" routerLinkActive="active">Mis citas</a>
+        <a routerLink="/dashboard/agendar" routerLinkActive="active">Agendar cita</a>
+        <a routerLink="/dashboard/medicos" routerLinkActive="active">Medicos</a>
+        <a routerLink="/dashboard/perfil" routerLinkActive="active">Mi perfil</a>
+      }
     </nav>
 
     <div class="shell__user">
       <p class="shell__user-name">{{ fullName }}</p>
-      <p class="shell__user-role">{{ role }}</p>
+      <p class="shell__user-role">{{ roleLabel }}</p>
       <button class="shell__logout" (click)="logout()">Cerrar sesion</button>
     </div>
   </aside>

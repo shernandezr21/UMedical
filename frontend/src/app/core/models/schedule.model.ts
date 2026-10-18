@@ -1,9 +1,12 @@
-export interface ScheduleRequest {
-  doctorId: number;
+export interface ScheduleBlock {
   dayOfWeek: number;
   startTime: string;
   endTime: string;
   slotDurationMinutes: number;
+}
+
+export interface ScheduleRequest extends ScheduleBlock {
+  doctorId: number;
 }
 
 export interface ScheduleResponse {
@@ -16,9 +19,12 @@ export interface ScheduleResponse {
   active: boolean;
 }
 
-export interface ScheduleBlock {
-  dayOfWeek: number;
-  startTime: string;
-  endTime: string;
-  slotDurationMinutes: number;
+export interface AvailableSlot {
+  date: string;
+  time: string;
+}
+
+export interface DayAvailability {
+  date: string;
+  availableSlots: number;
 }

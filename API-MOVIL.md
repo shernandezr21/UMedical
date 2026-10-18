@@ -67,6 +67,9 @@ Todos requieren token.
 | `POST /appointments/{id}/cancel` | Cancelar una cita pendiente | **200** con la cita |
 | `GET /appointments/{id}/documents` | Diagnóstico y receta de mi cita | `[{ id, type, content, appointmentId, fileName }]` |
 | `GET /documents/{id}/file` | PDF adjunto de un documento | `application/pdf` |
+| `GET /patients/me` | Mi perfil | el perfil (ver abajo) |
+| `PUT /patients/me` | Editar mi perfil | **200** con el perfil actualizado |
+| `PUT /users/me/password` | Cambiar mi contraseña | **204** sin cuerpo |
 
 ### Reservar: `POST /appointments`
 ```json
@@ -105,6 +108,43 @@ El cuerpo es opcional: `{ "reason": "Tuve un imprevisto" }`.
 
 ### PDF de un documento
 `GET /documents/{id}/file` necesita el header `Authorization`, así que **no sirve un enlace directo ni abrir la URL en el navegador**. Hay que pedirlo con `HttpClient` y `responseType: 'blob'`, y luego mostrarlo desde ese blob. Solo tiene PDF el documento cuyo `fileName` no es `null`; si no lo tiene, responde **404**.
+
+### Perfil y contraseña
+
+`GET /patients/me` responde **200**:
+```json
+{
+  "patientId": 1,
+  "userId": 4,
+  "username": "paciente1",
+  "email": "paciente1@correo.com",
+  "firstName": "Jose",
+  "lastName": "Ramirez",
+  "phone": "5555-0004",
+  "birthDate": "1995-04-12",
+  "address": "Calle de prueba 123",
+  "bloodType": "O+"
+}
+```
+`PUT /patients/me` reemplaza los datos editables, así que se manda el formulario completo. El `username` no se puede cambiar (es el identificador del token). Obligatorios: `email`, `firstName`, `lastName`; los demás se pueden omitir o mandar en `null`, y entonces se borran.
+```json
+{
+  "email": "paciente1@correo.com",
+  "firstName": "Jose",
+  "lastName": "Ramirez",
+  "phone": "5555-0004",
+  "birthDate": "1995-04-12",
+  "address": "Calle de prueba 123",
+  "bloodType": "O+"
+}
+```
+**409** si el email ya lo usa otro usuario.
+
+`PUT /users/me/password`:
+```json
+{ "currentPassword": "password", "newPassword": "ClaveNueva123" }
+```
+La contraseña nueva debe tener de 8 a 72 caracteres y ser distinta de la actual. Si `currentPassword` es incorrecta responde **400**, a propósito y **no 401**: un 401 cierra la sesión en el interceptor de la app. El token actual sigue siendo válido después de cambiar la contraseña.
 
 ## 4. Errores
 
@@ -169,5 +209,4 @@ Después hay que sincronizar y volver a compilar: `npx ionic build && npx cap sy
 ## 7. Limitaciones conocidas
 
 - Una cita pasada que nadie atendió se queda `PENDIENTE`: aún no existe el estado "no asistió". En la pestaña "Pendientes" conviene filtrar también por fecha (`appointmentDate >= hoy`).
-- No hay todavía endpoints para editar el perfil del paciente ni cambiar la contraseña. Vienen en el siguiente bloque.
 - No hay refresh token: a las 24 h hay que iniciar sesión de nuevo.

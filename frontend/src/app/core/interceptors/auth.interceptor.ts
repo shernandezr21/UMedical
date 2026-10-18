@@ -1,25 +1,25 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
-/**
- * Agrega automaticamente el header "Authorization: Bearer <token>" a
- * TODA peticion HTTP saliente, sin que cada componente/servicio tenga
- * que acordarse de hacerlo manualmente. Equivalente en el frontend a lo
- * que JwtAuthFilter hace en el backend, pero al reves: aqui ADJUNTAMOS
- * el token, en el backend lo LEEMOS.
- */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
+  const router = inject(Router);
+
   const token = authService.getToken();
+  const authReq = token ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;
 
-  if (!token) {
-    return next(req);
-  }
-
-  const clonedRequest = req.clone({
-    setHeaders: { Authorization: `Bearer ${token}` }
-  });
-
-  return next(clonedRequest);
+  return next(authReq).pipe(
+    catchError((error: HttpErrorResponse) => {
+      const isAuthCall = req.url.includes('/auth/login') || req.url.includes('/auth/register');
+      // 401 = token ausente, invalido o vencido: cerrar sesion y volver al login
+      if (error.status === 401 && !isAuthCall && authService.isAuthenticated()) {
+        authService.logout();
+        router.navigate(['/login'], { queryParams: { expired: '1' } });
+      }
+      return throwError(() => error);
+    })
+  );
 };

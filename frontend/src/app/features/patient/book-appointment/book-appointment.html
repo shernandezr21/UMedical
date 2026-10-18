@@ -1,0 +1,78 @@
+<h2 class="page-title">Agendar cita</h2>
+<p class="page-subtitle">Elige un medico, un dia con disponibilidad y un horario.</p>
+
+@if (booked(); as appt) {
+  <div class="card">
+    <div class="alert alert-success">Tu cita quedo reservada.</div>
+    <p style="font-weight: 500; font-size: 1.05rem;">{{ appt.doctorName }} · {{ appt.specialty }}</p>
+    <p class="muted" style="margin-top: 0.25rem;">{{ appt.appointmentDate }} a las {{ appt.appointmentTime.slice(0, 5) }}</p>
+    <div style="display: flex; gap: 0.6rem; margin-top: 1.25rem;">
+      <a class="btn btn-primary" routerLink="/dashboard/mis-citas">Ver mis citas</a>
+      <button type="button" class="btn btn-secondary" (click)="bookAnother()">Agendar otra</button>
+    </div>
+  </div>
+} @else {
+
+  <div class="card" style="margin-bottom: 1.5rem;">
+    <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">1. Elige el medico</h3>
+
+    <label class="field" style="max-width: 320px;">
+      <span>Especialidad</span>
+      <select (change)="onSpecialtyChange($event)">
+        <option value="" [selected]="specialtyFilter() === ''">Todas</option>
+        @for (s of specialties(); track s.id) {
+          <option [value]="s.name" [selected]="s.name === specialtyFilter()">{{ s.name }}</option>
+        }
+      </select>
+    </label>
+
+    <div class="grid-cards">
+      @for (d of filteredDoctors(); track d.id) {
+        <button type="button" class="doctor-card" [class.doctor-card--selected]="d.id === selectedDoctorId()"
+                (click)="selectDoctor(d.id)">
+          <span class="avatar">{{ initials(d.fullName) }}</span>
+          <span>
+            <span class="doctor-card__name" style="display: block;">{{ d.fullName }}</span>
+            <span class="doctor-card__meta" style="display: block;">{{ d.specialty }}</span>
+            @if (d.biography) {
+              <span class="doctor-card__bio" style="display: block;">{{ d.biography }}</span>
+            }
+          </span>
+        </button>
+      } @empty {
+        <p class="muted">No hay medicos para esta especialidad.</p>
+      }
+    </div>
+  </div>
+
+  @if (selectedDoctor(); as doctor) {
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">2. Elige dia y horario con {{ doctor.fullName }}</h3>
+      <app-slot-picker [doctorId]="doctor.id" (slotSelected)="slot.set($event)" />
+    </div>
+  }
+
+  @if (slot(); as s) {
+    <div class="card">
+      <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">3. Confirma tu cita</h3>
+
+      <p style="font-size: 0.95rem;">
+        <strong>{{ selectedDoctor()?.fullName }}</strong> · {{ selectedDoctor()?.specialty }}<br />
+        {{ s.date }} a las <strong>{{ s.time.slice(0, 5) }}</strong>
+      </p>
+
+      <label class="field" style="margin-top: 1rem;">
+        <span>Motivo de la consulta (opcional)</span>
+        <textarea rows="3" maxlength="255" (input)="onReasonInput($event)"></textarea>
+      </label>
+
+      @if (errorMessage()) {
+        <div class="alert alert-error">{{ errorMessage() }}</div>
+      }
+
+      <button type="button" class="btn btn-primary" [disabled]="isSubmitting()" (click)="confirm()">
+        {{ isSubmitting() ? 'Reservando...' : 'Confirmar cita' }}
+      </button>
+    </div>
+  }
+}

@@ -1,0 +1,42 @@
+<h2 class="page-title">Medicos</h2>
+<p class="page-subtitle">Conoce a los medicos de la clinica y agenda con quien prefieras.</p>
+
+@if (errorMessage()) {
+  <div class="alert alert-error">{{ errorMessage() }}</div>
+}
+
+<label class="field" style="max-width: 320px;">
+  <span>Especialidad</span>
+  <select (change)="onFilter($event)">
+    <option value="">Todas</option>
+    @for (s of specialties(); track s.id) {
+      <option [value]="s.name">{{ s.name }}</option>
+    }
+  </select>
+</label>
+
+@if (isLoading()) {
+  <p class="muted">Cargando...</p>
+} @else {
+  <div class="grid-cards">
+    @for (d of filtered(); track d.id) {
+      <div class="card" style="display: flex; flex-direction: column; gap: 0.9rem;">
+        <div style="display: flex; gap: 0.9rem; align-items: flex-start;">
+          <span class="avatar">{{ initials(d.fullName) }}</span>
+          <div>
+            <p class="doctor-card__name">{{ d.fullName }}</p>
+            <p class="doctor-card__meta">{{ d.specialty }} · Colegiado {{ d.licenseNumber }}</p>
+          </div>
+        </div>
+        @if (d.biography) {
+          <p style="font-size: 0.88rem;">{{ d.biography }}</p>
+        }
+        <button type="button" class="btn btn-primary" style="margin-top: auto;" (click)="book(d)">
+          Agendar con este medico
+        </button>
+      </div>
+    } @empty {
+      <p class="muted">No hay medicos para esta especialidad.</p>
+    }
+  </div>
+}

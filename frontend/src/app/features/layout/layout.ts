@@ -2,10 +2,17 @@ import { Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
+const ROLE_LABELS: Record<string, string> = {
+  ROLE_ADMIN: 'Administrador',
+  ROLE_DOCTOR: 'Medico',
+  ROLE_PATIENT: 'Paciente',
+  ROLE_SECRETARY: 'Secretaria'
+};
+
 @Component({
   selector: 'app-layout',
   standalone: true,
-    imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './layout.html',
   styleUrl: './layout.scss'
 })
@@ -15,6 +22,10 @@ export class Layout {
 
   get role(): string | null {
     return this.authService.getRole();
+  }
+
+  get roleLabel(): string {
+    return ROLE_LABELS[this.role ?? ''] ?? '';
   }
 
   get fullName(): string | null {

@@ -1,12 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login.html',
   styleUrl: './login.scss'
 })
@@ -14,7 +14,9 @@ export class Login {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
+  sessionExpired = this.route.snapshot.queryParamMap.get('expired') === '1';
   errorMessage = signal<string | null>(null);
   isLoading = signal(false);
 
@@ -38,11 +40,15 @@ export class Login {
     }).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.router.navigate(['/dashboard']);
+        this.router.navigate([this.authService.landingRoute()]);
       },
-      error: () => {
+      error: (err) => {
         this.isLoading.set(false);
-        this.errorMessage.set('Usuario o contrasena incorrectos.');
+        this.errorMessage.set(
+          err?.status === 0
+            ? 'No se pudo conectar con el servidor.'
+            : 'Usuario o contrasena incorrectos.'
+        );
       }
     });
   }
