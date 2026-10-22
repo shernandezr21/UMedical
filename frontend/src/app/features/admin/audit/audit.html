@@ -1,0 +1,79 @@
+<h2 class="page-title">Bitacora</h2>
+<p class="page-subtitle">
+  Quien hizo que y cuando: acceso a informacion clinica, cambios de cuentas y exportaciones.
+  Es solo de lectura: los registros no se pueden editar ni borrar.
+</p>
+
+<div class="card" style="margin-bottom: 1.5rem;">
+  <div class="field-row" style="grid-template-columns: 2fr 1fr 1fr 1fr; margin-bottom: 0;">
+    <label class="field" style="margin-bottom: 0;">
+      <span>Accion</span>
+      <select (change)="onAction($event)">
+        <option value="">Todas</option>
+        @for (a of actions; track a.value) {
+          <option [value]="a.value">{{ a.label }}</option>
+        }
+      </select>
+    </label>
+    <label class="field" style="margin-bottom: 0;">
+      <span>Usuario</span>
+      <input type="search" placeholder="Ej. dr.perez" (input)="onActor($event)" />
+    </label>
+    <label class="field" style="margin-bottom: 0;">
+      <span>Desde</span>
+      <input type="date" [value]="startDate()" (change)="onStart($event)" />
+    </label>
+    <label class="field" style="margin-bottom: 0;">
+      <span>Hasta</span>
+      <input type="date" [value]="endDate()" (change)="onEnd($event)" />
+    </label>
+  </div>
+  <div style="margin-top: 1rem;">
+    <button type="button" class="btn btn-secondary" [disabled]="isExporting()" (click)="exportCsv()">
+      {{ isExporting() ? 'Exportando...' : 'Exportar a CSV' }}
+    </button>
+  </div>
+</div>
+
+@if (errorMessage()) {
+  <div class="alert alert-error">{{ errorMessage() }}</div>
+}
+
+@if (isLoading()) {
+  <p class="muted">Cargando...</p>
+} @else if (result(); as r) {
+  <div class="card">
+    <table class="data-table">
+      <thead>
+        <tr><th>Fecha y hora</th><th>Usuario</th><th>Accion</th><th>Sobre</th><th>Detalle</th><th>IP</th></tr>
+      </thead>
+      <tbody>
+        @for (e of r.content; track e.id) {
+          <tr>
+            <td>{{ timeLabel(e.occurredAt) }}</td>
+            <td>{{ e.actorUsername }}<br /><span class="muted">{{ roleLabel(e.actorRole) }}</span></td>
+            <td>{{ actionLabel(e.action) }}</td>
+            <td>
+              {{ entityLabel(e) }}
+              @if (e.patientId !== null && e.entityType !== 'PATIENT') {
+                <br /><span class="muted">Paciente #{{ e.patientId }}</span>
+              }
+            </td>
+            <td>{{ e.details || '' }}</td>
+            <td>{{ e.ipAddress || '' }}</td>
+          </tr>
+        } @empty {
+          <tr><td colspan="6" class="muted">No hay registros con estos filtros.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (r.totalPages > 1) {
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+      <button type="button" class="btn btn-secondary" [disabled]="page() === 0" (click)="previousPage()">&larr; Anterior</button>
+      <span class="muted">Pagina {{ r.page + 1 }} de {{ r.totalPages }} · {{ r.totalElements }} registros</span>
+      <button type="button" class="btn btn-secondary" [disabled]="page() + 1 >= r.totalPages" (click)="nextPage()">Siguiente &rarr;</button>
+    </div>
+  }
+}

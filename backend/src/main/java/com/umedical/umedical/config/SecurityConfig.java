@@ -88,9 +88,9 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/v3/api-docs/**").permitAll()
 
                         // Medicos y catalogos (el listado de administracion va ANTES del listado general)
+                        .requestMatchers("/api/v1/doctors/me/**").hasAuthority("ROLE_DOCTOR")
                         .requestMatchers(HttpMethod.GET, "/api/v1/doctors/management").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/doctors/**", "/api/v1/specialties/**").hasAnyAuthority(
-                                "ROLE_ADMIN", "ROLE_DOCTOR", "ROLE_PATIENT", "ROLE_SECRETARY")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/doctors/**", "/api/v1/specialties/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_DOCTOR", "ROLE_PATIENT", "ROLE_SECRETARY")
                         .requestMatchers(HttpMethod.POST, "/api/v1/doctors/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/doctors/*").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/doctors/*/active").hasAuthority("ROLE_ADMIN")
@@ -98,8 +98,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/v1/specialties/*").hasAuthority("ROLE_ADMIN")
 
                         // Horarios
-                        .requestMatchers("/api/v1/schedules/available/**").hasAnyAuthority(
-                                "ROLE_PATIENT", "ROLE_ADMIN", "ROLE_SECRETARY")
+                        .requestMatchers("/api/v1/schedules/available/**").hasAnyAuthority("ROLE_PATIENT", "ROLE_ADMIN", "ROLE_SECRETARY")
                         .requestMatchers(HttpMethod.POST, "/api/v1/schedules").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/schedules/*").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/schedules/*").hasAuthority("ROLE_ADMIN")
@@ -145,6 +144,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/patients").hasAnyAuthority("ROLE_ADMIN", "ROLE_SECRETARY")
                         .requestMatchers(HttpMethod.GET, "/api/v1/patients/*").hasAnyAuthority("ROLE_ADMIN", "ROLE_SECRETARY")
                         .requestMatchers(HttpMethod.POST, "/api/v1/patients").hasAnyAuthority("ROLE_ADMIN", "ROLE_SECRETARY")
+
+                        .requestMatchers(HttpMethod.POST, "/api/v1/appointments/*/no-show").hasAnyAuthority(   "ROLE_DOCTOR", "ROLE_ADMIN", "ROLE_SECRETARY")
+                        .requestMatchers("/api/v1/audit/**").hasAuthority("ROLE_ADMIN")
 
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())

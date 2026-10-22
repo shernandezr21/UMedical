@@ -276,3 +276,21 @@ a.btn {
   &--completada { border-left-color: var(--color-completada); }
   &--cancelada { border-left-color: var(--color-cancelada); }
 }
+
+  // --- Estado "No asistio" ---
+  .badge-noasistio { background: #ECE8F3; color: #5B4B86; }
+  .appt-card--no_asistio { border-left-color: #7A6AA8; }
+  .calendar-chip--no_asistio { background: #ECE8F3 !important; color: #5B4B86 !important; border-color: #BFB3DA !important; }
+
+  // --- Imprimir o guardar el panel como PDF ---
+  .print-only { display: none; }
+
+  @media print {
+    .no-print, .shell__sidebar { display: none !important; }
+    .print-only { display: block; }
+    .shell { display: block !important; }
+    .shell__content { margin: 0 !important; padding: 0 !important; max-width: none !important; }
+    body { background: #fff !important; }
+    .card { box-shadow: none !important; break-inside: avoid; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }

@@ -81,6 +81,7 @@ export class MyAppointments {
   }
 
   statusLabel(a: AppointmentResponse): string {
+    if (a.status === 'NO_ASISTIO') { return 'NO ASISTIO'; }
     return a.status === 'PENDIENTE' && !this.isUpcoming(a) ? 'SIN ATENDER' : a.status;
   }
 
@@ -88,7 +89,8 @@ export class MyAppointments {
     return {
       PENDIENTE: 'badge badge-pendiente',
       COMPLETADA: 'badge badge-completada',
-      CANCELADA: 'badge badge-cancelada'
+      CANCELADA: 'badge badge-cancelada',
+      NO_ASISTIO: 'badge badge-noasistio'
     }[a.status] ?? 'badge';
   }
 

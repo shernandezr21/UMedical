@@ -6,5 +6,7 @@ package com.umedical.umedical.entity.enumns;
 public enum AppointmentStatus {
     PENDIENTE,
     COMPLETADA,
-    CANCELADA
+    CANCELADA,
+    /** El paciente no se presento a una cita que ya paso. */
+    NO_ASISTIO
 }

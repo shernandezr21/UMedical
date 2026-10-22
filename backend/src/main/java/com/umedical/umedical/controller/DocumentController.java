@@ -1,12 +1,13 @@
 package com.umedical.umedical.controller;
 
 import com.umedical.umedical.entity.Document;
+import com.umedical.umedical.exception.ConflictException;
+import com.umedical.umedical.exception.ForbiddenOperationException;
 import com.umedical.umedical.exception.ResourceNotFoundException;
 import com.umedical.umedical.repository.DocumentRepository;
 import com.umedical.umedical.security.CustomUserDetails;
-import com.umedical.umedical.exception.ConflictException;
-import com.umedical.umedical.exception.ForbiddenOperationException;
-
+import com.umedical.umedical.service.AuditActions;
+import com.umedical.umedical.service.AuditService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +20,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,9 +28,9 @@ import java.util.UUID;
 
 /**
  * Adjuntar y descargar PDFs de un Document (diagnostico/receta).
- * Separado de AppointmentController porque opera sobre el documento
- * directamente, no sobre la cita. El PDF se guarda en disco (no en la
- * base de datos) - solo guardamos la ruta en la tabla documents.
+ * Separado de AppointmentController porque opera sobre el documento directamente, no sobre la cita.
+ * El PDF se guarda en disco (no en la base de datos): solo se guarda la ruta en la tabla documents.
+ * Cada subida y cada descarga queda registrada en la bitacora de auditoria.
  */
 @RestController
 @RequestMapping("/api/v1/documents")
@@ -38,16 +38,19 @@ import java.util.UUID;
 public class DocumentController {
 
     private final DocumentRepository documentRepository;
+    private final AuditService auditService;
 
     @Value("${app.uploads.dir}")
     private String uploadsDir;
 
-    public DocumentController(DocumentRepository documentRepository) {
+    public DocumentController(DocumentRepository documentRepository, AuditService auditService) {
         this.documentRepository = documentRepository;
+        this.auditService = auditService;
     }
 
     @PostMapping(value = "/{id}/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Adjunta un PDF a un documento existente (solo el doctor dueno de la cita)")
+    @Operation(summary = "Adjunta un PDF a un documento existente (solo el doctor dueno de la cita)",
+            description = "403 si el documento no es tuyo, 409 si ya tiene un PDF, 400 si el archivo no es PDF, 413 si pesa mas de 10 MB.")
     public ResponseEntity<Void> uploadFile(
             @AuthenticationPrincipal CustomUserDetails currentUser,
             @PathVariable Long id,
@@ -79,11 +82,15 @@ public class DocumentController {
         document.setFilePath(destination.toString());
         documentRepository.save(document);
 
+        auditService.record(AuditActions.DOCUMENT_FILE_UPLOADED, "DOCUMENT", document.getId(),
+                document.getAppointment().getPatient().getId(), file.getOriginalFilename());
+
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}/file")
-    @Operation(summary = "Descarga el PDF adjunto (doctor dueno o paciente dueno de la cita)")
+    @Operation(summary = "Descarga el PDF adjunto (doctor dueno o paciente dueno de la cita)",
+            description = "403 para cualquier otro usuario, 404 si el documento no tiene PDF.")
     public ResponseEntity<Resource> downloadFile(
             @AuthenticationPrincipal CustomUserDetails currentUser,
             @PathVariable Long id) {
@@ -101,6 +108,9 @@ public class DocumentController {
         if (document.getFilePath() == null) {
             throw new ResourceNotFoundException("Este documento no tiene archivo adjunto");
         }
+
+        auditService.record(AuditActions.DOCUMENT_FILE_DOWNLOADED, "DOCUMENT", document.getId(),
+                document.getAppointment().getPatient().getId(), document.getFileName());
 
         Resource resource = new FileSystemResource(document.getFilePath());
 

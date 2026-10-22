@@ -4,14 +4,13 @@ import com.umedical.umedical.dto.CreatePatientByStaffRequest;
 import com.umedical.umedical.dto.CreatedPatientResponse;
 import com.umedical.umedical.dto.PatientSummaryResponse;
 import com.umedical.umedical.service.PatientService;
+import com.umedical.umedical.dto.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/patients")
@@ -25,11 +24,13 @@ public class StaffPatientController {
     }
 
     @GetMapping
-    @Operation(summary = "Busca pacientes por nombre, usuario, correo o telefono",
-            description = "Maximo 20 resultados. Sin texto devuelve los primeros 20 por apellido.")
-    public ResponseEntity<List<PatientSummaryResponse>> search(
-            @RequestParam(required = false, defaultValue = "") String search) {
-        return ResponseEntity.ok(patientService.search(search));
+    @Operation(summary = "Busca pacientes por nombre, usuario, correo o telefono (paginado)",
+            description = "page empieza en 0; size por defecto 10, maximo 50. Sin texto lista a todos por apellido.")
+    public ResponseEntity<PageResponse<PatientSummaryResponse>> search(
+            @RequestParam(required = false, defaultValue = "") String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(patientService.search(search, page, size));
     }
 
     @GetMapping("/{id}")

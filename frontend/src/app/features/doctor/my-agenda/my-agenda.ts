@@ -283,7 +283,8 @@ export class MyAgenda {
     return {
       PENDIENTE: 'badge badge-pendiente',
       COMPLETADA: 'badge badge-completada',
-      CANCELADA: 'badge badge-cancelada'
+      CANCELADA: 'badge badge-cancelada',
+      NO_ASISTIO: 'badge badge-noasistio'
     }[status] ?? 'badge';
   }
 
@@ -300,6 +301,29 @@ export class MyAgenda {
     this.successMessage.set(null);
     this.loadWeek();
   }
+
+      hasStarted(appt: AppointmentResponse): boolean {
+      return new Date(`${appt.appointmentDate}T${appt.appointmentTime}`).getTime() <= Date.now();
+    }
+
+    statusText(status: string): string {
+      return status === 'NO_ASISTIO' ? 'NO ASISTIO' : status;
+    }
+
+    markNoShow(appt: AppointmentResponse): void {
+      if (!window.confirm(`¿Marcar que ${appt.patientName} no asistio a su cita?`)) {
+        return;
+      }
+      this.errorMessage.set(null);
+      this.successMessage.set(null);
+      this.appointmentService.markNoShow(appt.id).subscribe({
+        next: () => {
+          this.successMessage.set('La cita quedo marcada como no asistio.');
+          this.loadWeek();
+        },
+        error: (err) => this.errorMessage.set(err?.error?.message ?? 'No se pudo marcar la inasistencia.')
+      });
+    }
   
 }
 

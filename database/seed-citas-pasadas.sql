@@ -4,9 +4,7 @@
 -- La API no deja crear citas en el pasado a proposito (reserva con minimo
 -- 60 min de anticipacion), por eso estas se insertan directo en la base.
 --
--- Usa a paciente1 y a dr.perez del schema.sql. Si en tu base tienen otro
--- username, cambialos en las dos primeras lineas.
--- Se puede correr varias veces: primero borra lo que inserto la vez anterior.
+-- Usa a paciente1 y a dr.perez del schema.sql.
 -- =====================================================================
 USE u_medical;
 
@@ -20,7 +18,7 @@ DELETE FROM appointments
    AND reason IN ('Control de rutina', 'Dolor de garganta y fiebre', 'Revision de resultados (sin atender)');
 
 -- El Dr. Perez atiende lunes y miercoles de 08:00 a 12:00.
--- Las fechas son relativas a hoy, asi que siempre quedan en el pasado.
+
 SET @lunes_pasado := CURDATE() - INTERVAL (WEEKDAY(CURDATE()) + 7) DAY;   -- lunes de la semana pasada
 SET @lunes_hace_3 := @lunes_pasado - INTERVAL 14 DAY;                      -- lunes de hace 3 semanas
 
@@ -58,7 +56,7 @@ VALUES (@patient_id, @doctor_id, @lunes_pasado + INTERVAL 2 DAY, '08:30:00', 'PE
         @lunes_pasado - INTERVAL 1 DAY);
 
 -- ---------------------------------------------------------------------
--- Verificacion: deberias ver 2 citas COMPLETADA con 2 documentos cada una
+-- Verificacion: 2 citas COMPLETADA con 2 documentos cada una
 -- ---------------------------------------------------------------------
 SELECT a.id, a.appointment_date, a.appointment_time, a.status, a.reason,
        (SELECT COUNT(*) FROM documents d WHERE d.appointment_id = a.id) AS documentos
@@ -66,9 +64,3 @@ SELECT a.id, a.appointment_date, a.appointment_time, a.status, a.reason,
  WHERE a.patient_id = @patient_id
  ORDER BY a.appointment_date DESC, a.appointment_time DESC;
 
--- ---------------------------------------------------------------------
--- Para quitar estos datos de prueba cuando ya no los necesites:
--- DELETE FROM appointments
---  WHERE patient_id = @patient_id AND doctor_id = @doctor_id
---    AND reason IN ('Control de rutina', 'Dolor de garganta y fiebre', 'Revision de resultados (sin atender)');
--- ---------------------------------------------------------------------

@@ -59,6 +59,7 @@ public class ReportSummaryResponse {
     private long pending;
     private long completed;
     private long cancelled;
+    private long noShow;
     private long unattended;
     private long activeDoctors;
     private long activePatients;
@@ -68,7 +69,7 @@ public class ReportSummaryResponse {
     private List<DayCount> byDay;
 
     public ReportSummaryResponse(LocalDate startDate, LocalDate endDate, long totalAppointments, long pending,
-                                 long completed, long cancelled, long unattended, long activeDoctors,
+                                 long completed, long cancelled, long noShow, long unattended, long activeDoctors,
                                  long activePatients, List<CountItem> byStatus, List<CountItem> bySpecialty,
                                  List<DoctorStat> byDoctor, List<DayCount> byDay) {
         this.startDate = startDate;
@@ -77,6 +78,7 @@ public class ReportSummaryResponse {
         this.pending = pending;
         this.completed = completed;
         this.cancelled = cancelled;
+        this.noShow = noShow;
         this.unattended = unattended;
         this.activeDoctors = activeDoctors;
         this.activePatients = activePatients;
@@ -92,6 +94,7 @@ public class ReportSummaryResponse {
     public long getPending() { return pending; }
     public long getCompleted() { return completed; }
     public long getCancelled() { return cancelled; }
+    public long getNoShow() { return noShow; }
     public long getUnattended() { return unattended; }
     public long getActiveDoctors() { return activeDoctors; }
     public long getActivePatients() { return activePatients; }

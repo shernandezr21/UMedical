@@ -1,4 +1,4 @@
-export type AppointmentStatus = 'PENDIENTE' | 'COMPLETADA' | 'CANCELADA';
+export type AppointmentStatus = 'PENDIENTE' | 'COMPLETADA' | 'CANCELADA' | 'NO_ASISTIO'
 
 export interface AppointmentResponse {
   id: number;

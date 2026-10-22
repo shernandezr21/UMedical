@@ -99,6 +99,7 @@ export interface ReportSummary {
   pending: number;
   completed: number;
   cancelled: number;
+  noShow: number;
   unattended: number;
   activeDoctors: number;
   activePatients: number;

@@ -1,7 +1,13 @@
 <h2 class="page-title">Panel</h2>
-<p class="page-subtitle">Actividad de la clinica en el periodo que elijas.</p>
+<p class="page-subtitle no-print">Actividad de la clinica en el periodo que elijas.</p>
 
-<div class="card" style="margin-bottom: 1.5rem;">
+<!-- Solo se ve al imprimir o guardar como PDF -->
+<div class="print-only" style="margin-bottom: 1rem;">
+  <h2 style="font-size: 1.3rem;">U-Medical · Reporte de actividad</h2>
+  <p class="muted">Periodo: {{ startDate() }} al {{ endDate() }}</p>
+</div>
+
+<div class="card no-print" style="margin-bottom: 1.5rem;">
   <div class="presets">
     <button type="button" class="btn" [class.btn-primary]="preset() === 'last30'" [class.btn-secondary]="preset() !== 'last30'" (click)="applyPreset('last30')">Ultimos 30 dias</button>
     <button type="button" class="btn" [class.btn-primary]="preset() === 'month'" [class.btn-secondary]="preset() !== 'month'" (click)="applyPreset('month')">Este mes</button>
@@ -18,10 +24,16 @@
       <input type="date" [value]="endDate()" (change)="onEndChange($event)" />
     </label>
   </div>
+  <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem;">
+    <button type="button" class="btn btn-secondary" [disabled]="isExporting()" (click)="exportCsv()">
+      {{ isExporting() ? 'Exportando...' : 'Descargar citas (CSV)' }}
+    </button>
+    <button type="button" class="btn btn-secondary" (click)="printReport()">Imprimir / guardar como PDF</button>
+  </div>
 </div>
 
 @if (errorMessage()) {
-  <div class="alert alert-error">{{ errorMessage() }}</div>
+  <div class="alert alert-error no-print">{{ errorMessage() }}</div>
 }
 
 @if (isLoading() && !report()) {
@@ -34,6 +46,7 @@
     <div class="kpi kpi--completed"><p class="kpi__value">{{ r.completed }}</p><p class="kpi__label">Completadas</p></div>
     <div class="kpi kpi--pending"><p class="kpi__value">{{ r.pending }}</p><p class="kpi__label">Pendientes</p></div>
     <div class="kpi kpi--cancelled"><p class="kpi__value">{{ r.cancelled }}</p><p class="kpi__label">Canceladas ({{ cancelRate() }}%)</p></div>
+    <div class="kpi"><p class="kpi__value">{{ r.noShow }}</p><p class="kpi__label">No asistieron</p></div>
     <div class="kpi"><p class="kpi__value">{{ r.unattended }}</p><p class="kpi__label">Sin atender</p></div>
     <div class="kpi"><p class="kpi__value">{{ r.activeDoctors }}</p><p class="kpi__label">Medicos activos</p></div>
     <div class="kpi"><p class="kpi__value">{{ r.activePatients }}</p><p class="kpi__label">Pacientes activos</p></div>

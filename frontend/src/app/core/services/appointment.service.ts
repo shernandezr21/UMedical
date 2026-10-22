@@ -52,6 +52,10 @@ export class AppointmentService {
     return this.http.get(`${API_BASE_URL}/documents/${documentId}/file`, { responseType: 'blob' });
   }
 
+  markNoShow(id: number): Observable<AppointmentResponse> {
+    return this.http.post<AppointmentResponse>(`${API_BASE_URL}/appointments/${id}/no-show`, {});
+  }
+
   // ---- Secretaria y admin ----
   getClinicAgenda(startDate: string, endDate: string, doctorId?: number): Observable<AppointmentResponse[]> {
     let params = new HttpParams().set('startDate', startDate).set('endDate', endDate);

@@ -55,10 +55,15 @@
             {{ appt.reason || 'Sin motivo especificado' }}
           </p>
         </div>
-        <span [class]="statusClass(appt.status)">{{ appt.status }}</span>
+        <span [class]="statusClass(appt.status)">{{ statusText(appt.status) }}</span>
       </div>
 
       @if (appt.status !== 'CANCELADA') {
+        @if (appt.status === 'PENDIENTE' && hasStarted(appt)) {
+          <button type="button" class="btn btn-secondary" style="margin-top: 0.6rem;" (click)="markNoShow(appt)">
+            El paciente no asistio
+          </button>
+        }
         @if (isFuture(appt)) {
           <p style="color: var(--color-muted); font-size: 0.85rem; margin-top: 1rem;">
             Podras registrar diagnostico y receta a partir del {{ appt.appointmentDate }}.

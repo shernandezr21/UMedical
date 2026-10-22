@@ -7,11 +7,14 @@ import com.umedical.umedical.dto.SetActiveRequest;
 import com.umedical.umedical.dto.UpdateDoctorRequest;
 import com.umedical.umedical.entity.Doctor;
 import com.umedical.umedical.repository.DoctorRepository;
+import com.umedical.umedical.service.AuditActions;
+import com.umedical.umedical.service.AuditService;
 import com.umedical.umedical.service.DoctorAdminService;
 import com.umedical.umedical.service.DoctorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,13 +28,16 @@ public class DoctorController {
     private final DoctorRepository doctorRepository;
     private final DoctorService doctorService;
     private final DoctorAdminService doctorAdminService;
+    private final AuditService auditService;
 
     public DoctorController(DoctorRepository doctorRepository,
                             DoctorService doctorService,
-                            DoctorAdminService doctorAdminService) {
+                            DoctorAdminService doctorAdminService,
+                            AuditService auditService) {
         this.doctorRepository = doctorRepository;
         this.doctorService = doctorService;
         this.doctorAdminService = doctorAdminService;
+        this.auditService = auditService;
     }
 
     @GetMapping
@@ -57,7 +63,7 @@ public class DoctorController {
     @PostMapping
     @Operation(summary = "Crea un nuevo medico con sus horarios (solo ADMIN)")
     public ResponseEntity<DoctorResponse> createDoctor(@Valid @RequestBody CreateDoctorRequest request) {
-        return ResponseEntity.ok(doctorService.createDoctor(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(doctorService.createDoctor(request));
     }
 
     @GetMapping("/management")
@@ -79,6 +85,9 @@ public class DoctorController {
             description = "409 si se intenta desactivar a un medico con citas pendientes desde hoy.")
     public ResponseEntity<DoctorDetailResponse> setActive(@PathVariable Long id,
                                                           @Valid @RequestBody SetActiveRequest request) {
-        return ResponseEntity.ok(doctorAdminService.setActive(id, request.getActive()));
+        DoctorDetailResponse updated = doctorAdminService.setActive(id, request.getActive());
+        auditService.record(request.getActive() ? AuditActions.DOCTOR_ACTIVATED : AuditActions.DOCTOR_DEACTIVATED,
+                "DOCTOR", id, null, updated.getUsername());
+        return ResponseEntity.ok(updated);
     }
 }

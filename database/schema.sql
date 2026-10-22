@@ -83,6 +83,19 @@ CREATE TABLE schedules (
 
 CREATE INDEX idx_schedules_doctor_day ON schedules(doctor_id, day_of_week);
 
+-- Tabla para bloquear horarios de citas (por ejemplo, vacaciones del doctor)
+CREATE TABLE doctor_time_off (
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    doctor_id   BIGINT       NOT NULL,
+    start_date  DATE         NOT NULL,
+    end_date    DATE         NOT NULL,
+    reason      VARCHAR(255),
+    created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_time_off_doctor FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE,
+    CONSTRAINT chk_time_off_dates CHECK (end_date >= start_date),
+    INDEX idx_time_off_doctor_dates (doctor_id, start_date, end_date)
+);
+
 -- ---------------------------------------------------------------------
 -- Tabla: appointments
 -- Registro de citas medicas
@@ -103,7 +116,7 @@ CREATE TABLE appointments (
     CONSTRAINT fk_appointments_doctor FOREIGN KEY (doctor_id) REFERENCES doctors(id),
     CONSTRAINT fk_appointments_schedule FOREIGN KEY (schedule_id) REFERENCES schedules(id),
     CONSTRAINT uq_doctor_active_slot UNIQUE (doctor_id, appointment_date, appointment_time, active_slot),
-    CONSTRAINT chk_status CHECK (status IN ('PENDIENTE', 'COMPLETADA', 'CANCELADA'))
+    CONSTRAINT chk_status CHECK (status IN ('PENDIENTE', 'COMPLETADA', 'CANCELADA', 'NO_ASISTIO'))
 ) ENGINE=InnoDB;
 
 CREATE INDEX idx_appointments_patient ON appointments(patient_id);
@@ -128,6 +141,29 @@ CREATE TABLE documents (
 ) ENGINE=InnoDB;
 
 CREATE INDEX idx_documents_appointment ON documents(appointment_id);
+
+-----
+-- TABLA PARA AUDITORIAS
+-----
+
+Bitacora de auditoria (solo se inserta; sin llaves foraneas a proposito: debe sobrevivir a cualquier borrado)
+CREATE TABLE IF NOT EXISTS audit_log (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    occurred_at     DATETIME     NOT NULL,
+    actor_user_id   BIGINT       NULL,
+    actor_username  VARCHAR(50)  NOT NULL,
+    actor_role      VARCHAR(30)  NOT NULL,
+    action          VARCHAR(40)  NOT NULL,
+    entity_type     VARCHAR(30)  NULL,
+    entity_id       BIGINT       NULL,
+    patient_id      BIGINT       NULL,
+    details         VARCHAR(500) NULL,
+    ip_address      VARCHAR(45)  NULL,
+    INDEX idx_audit_time (occurred_at),
+    INDEX idx_audit_actor (actor_username),
+    INDEX idx_audit_action (action),
+    INDEX idx_audit_patient (patient_id)
+);
 
 -- =====================================================================
 -- Datos semilla para pruebas

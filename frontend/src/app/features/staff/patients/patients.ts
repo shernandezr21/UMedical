@@ -2,8 +2,9 @@ import { Component, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Subject, catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { controlErrorText } from '../../../core/form-errors';
+import { PageResponse } from '../../../core/models/admin.model';
 import { CreatedPatient, PatientSummary } from '../../../core/models/patient.model';
 import { PatientService } from '../../../core/services/patient.service';
 
@@ -17,13 +18,15 @@ export class Patients {
   private fb = inject(FormBuilder);
   private patientService = inject(PatientService);
   private search$ = new Subject<string>();
-  private currentQuery = '';
+  private searchText = '';
 
+  readonly pageSize = 10;
   readonly bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
   readonly today = this.toIso(new Date());
 
-  patients = signal<PatientSummary[]>([]);
-  isSearching = signal(false);
+  result = signal<PageResponse<PatientSummary> | null>(null);
+  page = signal(0);
+  isSearching = signal(true);
   searchError = signal<string | null>(null);
 
   showForm = signal(false);
@@ -43,31 +46,46 @@ export class Patients {
   });
 
   constructor() {
-    this.search$.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap((query) => {
-        this.isSearching.set(true);
-        this.searchError.set(null);
-        return this.patientService.search(query).pipe(
-          catchError(() => {
-            this.searchError.set('No se pudo buscar pacientes.');
-            return of([] as PatientSummary[]);
-          })
-        );
-      }),
-      takeUntilDestroyed()
-    ).subscribe((list) => {
-      this.patients.set(list);
-      this.isSearching.set(false);
+    this.search$.pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed()).subscribe((text) => {
+      this.searchText = text;
+      this.page.set(0);
+      this.load();
     });
+    this.load();
+  }
 
-    this.search$.next('');
+  load(): void {
+    this.isSearching.set(true);
+    this.searchError.set(null);
+
+    this.patientService.search(this.searchText, this.page(), this.pageSize).subscribe({
+      next: (result) => {
+        this.result.set(result);
+        this.isSearching.set(false);
+      },
+      error: () => {
+        this.isSearching.set(false);
+        this.searchError.set('No se pudo buscar pacientes.');
+      }
+    });
   }
 
   onSearchInput(event: Event): void {
-    this.currentQuery = (event.target as HTMLInputElement).value;
-    this.search$.next(this.currentQuery);
+    this.search$.next((event.target as HTMLInputElement).value);
+  }
+
+  previousPage(): void {
+    if (this.page() > 0) {
+      this.page.update((p) => p - 1);
+      this.load();
+    }
+  }
+
+  nextPage(): void {
+    if (this.page() + 1 < (this.result()?.totalPages ?? 0)) {
+      this.page.update((p) => p + 1);
+      this.load();
+    }
   }
 
   errorText(name: string): string | null {
@@ -115,8 +133,8 @@ export class Patients {
         this.created.set(result);
         this.showForm.set(false);
         this.form.reset();
-        // Refrescar la lista con la busqueda actual
-        this.patientService.search(this.currentQuery).subscribe((list) => this.patients.set(list));
+        this.page.set(0);
+        this.load();
       },
       error: (err) => {
         this.isSaving.set(false);

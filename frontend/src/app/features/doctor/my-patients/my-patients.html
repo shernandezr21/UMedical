@@ -1,0 +1,54 @@
+<h2 class="page-title">Mis pacientes</h2>
+<p class="page-subtitle">Pacientes que tienen o tuvieron citas contigo. Abre su expediente para ver tus consultas con ellos.</p>
+
+@if (errorMessage()) {
+  <div class="alert alert-error">{{ errorMessage() }}</div>
+}
+
+<label class="field" style="max-width: 460px;">
+  <span>Buscar por nombre, correo o telefono</span>
+  <input type="search" (input)="onSearchInput($event)" />
+</label>
+
+@if (isLoading()) {
+  <p class="muted">Cargando...</p>
+} @else {
+  <div class="grid-cards">
+    @for (p of result()?.content ?? []; track p.patientId) {
+      <div class="card" style="display: flex; flex-direction: column; gap: 0.8rem;">
+        <div style="display: flex; gap: 0.9rem; align-items: center;">
+          <span class="avatar">{{ initials(p.fullName) }}</span>
+          <div>
+            <p style="font-weight: 500;">{{ p.fullName }}</p>
+            <p class="muted">{{ p.phone || 'Sin telefono' }}</p>
+          </div>
+        </div>
+
+        <p class="muted">
+          {{ p.totalAppointments }} cita(s) · {{ p.completedAppointments }} atendida(s)
+          @if (p.lastCompletedDate) {
+            · ultima atencion: {{ p.lastCompletedDate }}
+          }
+        </p>
+
+        <a class="btn btn-secondary" style="margin-top: auto;" [routerLink]="['/dashboard/mis-pacientes', p.patientId]">
+          Ver expediente
+        </a>
+      </div>
+    } @empty {
+      <div class="card">
+        <p class="muted">No se encontraron pacientes.</p>
+      </div>
+    }
+  </div>
+
+  @if (result(); as r) {
+    @if (r.totalPages > 1) {
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.2rem;">
+        <button type="button" class="btn btn-secondary" [disabled]="page() === 0" (click)="previousPage()">&larr; Anterior</button>
+        <span class="muted">Pagina {{ r.page + 1 }} de {{ r.totalPages }} · {{ r.totalElements }} pacientes</span>
+        <button type="button" class="btn btn-secondary" [disabled]="page() + 1 >= r.totalPages" (click)="nextPage()">Siguiente &rarr;</button>
+      </div>
+    }
+  }
+}

@@ -47,18 +47,21 @@ public class ReportService {
             byStatus.put(String.valueOf(row[0]), ((Number) row[1]).longValue());
         }
 
-        // "Pendiente" en la base incluye las citas pasadas que nadie atendio: aqui se separan
+        // "Pendiente" en la base incluye las citas pasadas que nadie atendio ni marco: aqui se separan
         long unattended = appointmentRepository.countUnattended(
                 start, end, LocalDate.now(clock), AppointmentStatus.PENDIENTE);
         long pending = byStatus.getOrDefault("PENDIENTE", 0L) - unattended;
         long completed = byStatus.getOrDefault("COMPLETADA", 0L);
         long cancelled = byStatus.getOrDefault("CANCELADA", 0L);
-        long total = pending + unattended + completed + cancelled;
+        long noShow = byStatus.getOrDefault("NO_ASISTIO", 0L);
+        long total = pending + unattended + completed + cancelled + noShow;
 
+        // Mismo orden que usan las graficas del panel
         List<CountItem> statusItems = List.of(
                 new CountItem("Pendientes", pending),
                 new CountItem("Completadas", completed),
                 new CountItem("Canceladas", cancelled),
+                new CountItem("No asistieron", noShow),
                 new CountItem("Sin atender", unattended));
 
         List<CountItem> bySpecialty = appointmentRepository.countBySpecialty(start, end).stream()
@@ -77,7 +80,7 @@ public class ReportService {
                 .toList();
 
         return new ReportSummaryResponse(
-                start, end, total, pending, completed, cancelled, unattended,
+                start, end, total, pending, completed, cancelled, noShow, unattended,
                 userRepository.countByRoleNameAndActiveTrue("ROLE_DOCTOR"),
                 userRepository.countByRoleNameAndActiveTrue("ROLE_PATIENT"),
                 statusItems, bySpecialty, byDoctor, byDay);

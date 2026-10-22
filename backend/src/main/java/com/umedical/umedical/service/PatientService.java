@@ -2,6 +2,7 @@ package com.umedical.umedical.service;
 
 import com.umedical.umedical.dto.CreatePatientByStaffRequest;
 import com.umedical.umedical.dto.CreatedPatientResponse;
+import com.umedical.umedical.dto.PageResponse;
 import com.umedical.umedical.dto.PatientProfileResponse;
 import com.umedical.umedical.dto.PatientSummaryResponse;
 import com.umedical.umedical.dto.RegisterPatientRequest;
@@ -14,38 +15,38 @@ import com.umedical.umedical.exception.ResourceNotFoundException;
 import com.umedical.umedical.repository.PatientRepository;
 import com.umedical.umedical.repository.RoleRepository;
 import com.umedical.umedical.repository.UserRepository;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.SecureRandom;
-import java.util.List;
+import java.time.LocalDate;
 
 /**
  * Pacientes: registro publico, perfil propio, y operaciones de la secretaria (buscar, ver y dar de alta).
- * El rol lo fija siempre el servidor (ROLE_PATIENT).
+ * El rol lo fija siempre el servidor (ROLE_PATIENT). Los usuarios y contrasenas temporales los genera
+ * CredentialService (una sola implementacion para todo el sistema).
  */
 @Service
 public class PatientService {
-
-    private static final int MAX_SEARCH_RESULTS = 20;
-    private static final String PASSWORD_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PatientRepository patientRepository;
     private final PasswordEncoder passwordEncoder;
-    private final SecureRandom secureRandom = new SecureRandom();
+    private final CredentialService credentialService;
 
     public PatientService(UserRepository userRepository,
                           RoleRepository roleRepository,
                           PatientRepository patientRepository,
-                          PasswordEncoder passwordEncoder) {
+                          PasswordEncoder passwordEncoder,
+                          CredentialService credentialService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.patientRepository = patientRepository;
         this.passwordEncoder = passwordEncoder;
+        this.credentialService = credentialService;
     }
 
     // ------------------------------------------------------------------ Registro publico
@@ -101,11 +102,16 @@ public class PatientService {
     // ------------------------------------------------------------------ Secretaria / admin
 
     @Transactional(readOnly = true)
-    public List<PatientSummaryResponse> search(String query) {
-        String text = query == null ? "" : query.trim();
-        return patientRepository.search(text, PageRequest.of(0, MAX_SEARCH_RESULTS)).stream()
-                .map(this::toSummary)
-                .toList();
+    public PageResponse<PatientSummaryResponse> search(String query, int page, int size) {
+        int safeSize = Math.min(Math.max(size, 1), 50);
+        int safePage = Math.max(page, 0);
+
+        Page<Patient> result = patientRepository.search(
+                query == null ? "" : query.trim(), PageRequest.of(safePage, safeSize));
+
+        return new PageResponse<>(
+                result.getContent().stream().map(this::toSummary).toList(),
+                result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages());
     }
 
     @Transactional(readOnly = true)
@@ -123,8 +129,8 @@ public class PatientService {
             throw new ConflictException("Ese email ya esta en uso");
         }
 
-        String username = generateUsername(email);
-        String temporaryPassword = generateTemporaryPassword();
+        String username = credentialService.generateUsername(email);
+        String temporaryPassword = credentialService.generateTemporaryPassword();
 
         User user = newPatientUser(username, email, passwordEncoder.encode(temporaryPassword),
                 request.getFirstName(), request.getLastName(), request.getPhone());
@@ -152,39 +158,13 @@ public class PatientService {
         return userRepository.save(user);
     }
 
-    private Patient savePatientProfile(User user, java.time.LocalDate birthDate, String address, String bloodType) {
+    private Patient savePatientProfile(User user, LocalDate birthDate, String address, String bloodType) {
         Patient patient = new Patient();
         patient.setUser(user);
         patient.setBirthDate(birthDate);
         patient.setAddress(blankToNull(address));
         patient.setBloodType(blankToNull(bloodType));
         return patientRepository.save(patient);
-    }
-
-    private String generateUsername(String email) {
-        String base = email.substring(0, email.indexOf('@')).toLowerCase().replaceAll("[^a-z0-9._-]", ".");
-        if (base.length() < 4) {
-            base = base + "paciente";
-        }
-        if (base.length() > 40) {
-            base = base.substring(0, 40);
-        }
-
-        String candidate = base;
-        int suffix = 1;
-        while (userRepository.existsByUsername(candidate)) {
-            suffix++;
-            candidate = base + suffix;
-        }
-        return candidate;
-    }
-
-    private String generateTemporaryPassword() {
-        StringBuilder password = new StringBuilder(12);
-        for (int i = 0; i < 12; i++) {
-            password.append(PASSWORD_ALPHABET.charAt(secureRandom.nextInt(PASSWORD_ALPHABET.length())));
-        }
-        return password.toString();
     }
 
     private Patient findByUserId(Long userId) {

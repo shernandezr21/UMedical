@@ -35,6 +35,7 @@ import java.util.List;
  * (2) el paciente no puede tener otra cita activa a la misma hora,
  * (3) la UNIQUE KEY (doctor, fecha, hora, active_slot) de la BD es la ultima linea de defensa
  *     ante dos peticiones simultaneas.
+ * El acceso a informacion clinica y las inasistencias quedan registrados en la bitacora de auditoria.
  */
 @Service
 public class AppointmentService {
@@ -46,6 +47,7 @@ public class AppointmentService {
     private final PatientRepository patientRepository;
     private final DocumentRepository documentRepository;
     private final AvailabilityService availabilityService;
+    private final AuditService auditService;
     private final Clock clock;
     private final long minCancelHours;
     private final long minBookingLeadMinutes;
@@ -55,6 +57,7 @@ public class AppointmentService {
                               PatientRepository patientRepository,
                               DocumentRepository documentRepository,
                               AvailabilityService availabilityService,
+                              AuditService auditService,
                               Clock clock,
                               @Value("${app.appointments.min-cancel-hours:2}") long minCancelHours,
                               @Value("${app.appointments.min-booking-lead-minutes:60}") long minBookingLeadMinutes) {
@@ -63,6 +66,7 @@ public class AppointmentService {
         this.patientRepository = patientRepository;
         this.documentRepository = documentRepository;
         this.availabilityService = availabilityService;
+        this.auditService = auditService;
         this.clock = clock;
         this.minCancelHours = minCancelHours;
         this.minBookingLeadMinutes = minBookingLeadMinutes;
@@ -201,6 +205,39 @@ public class AppointmentService {
         return toResponse(appointmentRepository.save(appointment));
     }
 
+    /**
+     * Marca como NO_ASISTIO una cita pendiente que ya empezo y a la que el paciente no se presento.
+     * La marca el medico de la cita, la secretaria o el administrador.
+     * Si despues el medico documenta la cita (porque si asistio), pasa a COMPLETADA: queda como correccion.
+     */
+    @Transactional
+    public AppointmentResponse markNoShow(Long userId, String role, Long appointmentId) {
+        Appointment appointment = findAppointment(appointmentId);
+
+        switch (role) {
+            case "ROLE_DOCTOR" -> assertDoctorOwner(appointment, userId, "Esta cita no es tuya");
+            case "ROLE_ADMIN", "ROLE_SECRETARY" -> { }
+            default -> throw new ForbiddenOperationException("No tienes permisos para marcar inasistencias");
+        }
+
+        if (appointment.getStatus() != AppointmentStatus.PENDIENTE) {
+            throw new ConflictException("Solo se puede marcar como no asistio una cita pendiente");
+        }
+
+        LocalDateTime start = LocalDateTime.of(appointment.getAppointmentDate(), appointment.getAppointmentTime());
+        if (start.isAfter(LocalDateTime.now(clock))) {
+            throw new ConflictException("La cita aun no ocurre: no se puede marcar como no asistio");
+        }
+
+        appointment.setStatus(AppointmentStatus.NO_ASISTIO);
+        appointmentRepository.save(appointment);
+
+        auditService.record(AuditActions.APPOINTMENT_NO_SHOW, "APPOINTMENT", appointment.getId(),
+                appointment.getPatient().getId(), null);
+
+        return toResponse(appointment);
+    }
+
     // ------------------------------------------------------------------ Personal de la clinica
 
     /** Agenda general de la clinica en un rango de fechas, opcionalmente de un solo medico. */
@@ -261,11 +298,14 @@ public class AppointmentService {
         appointment.setStatus(AppointmentStatus.COMPLETADA);
         appointmentRepository.save(appointment);
 
+        auditService.record(AuditActions.DOCUMENT_CREATED, "DOCUMENT", document.getId(),
+                appointment.getPatient().getId(), document.getType().name());
+
         return new DocumentResponse(document.getId(), document.getType(), document.getContent(),
                 appointment.getId(), document.getFileName());
     }
 
-    /** Documentos de una cita: los puede ver el doctor dueno y el paciente dueno. */
+    /** Documentos de una cita: los puede ver el doctor dueno y el paciente dueno. Cada consulta queda en la bitacora. */
     public List<DocumentResponse> getDocumentsForAppointment(Long userId, Long appointmentId) {
         Appointment appointment = findAppointment(appointmentId);
 
@@ -274,6 +314,9 @@ public class AppointmentService {
         if (!isDoctorOwner && !isPatientOwner) {
             throw new ForbiddenOperationException("No tienes acceso a los documentos de esta cita");
         }
+
+        auditService.record(AuditActions.DOCUMENTS_VIEWED, "APPOINTMENT", appointmentId,
+                appointment.getPatient().getId(), null);
 
         return documentRepository.findByAppointmentId(appointmentId).stream()
                 .map(d -> new DocumentResponse(d.getId(), d.getType(), d.getContent(), appointmentId, d.getFileName()))

@@ -1,12 +1,14 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { blobErrorMessage, saveBlob } from '../../../core/download';
 import { ReportSummary } from '../../../core/models/admin.model';
 import { ReportService } from '../../../core/services/report.service';
 
-// Mismo orden que devuelve el backend: Pendientes, Completadas, Canceladas, Sin atender
+// Mismo orden que devuelve el backend: Pendientes, Completadas, Canceladas, No asistieron, Sin atender
 const STATUS_COLORS = [
   'var(--color-pendiente)',
   'var(--color-completada)',
   'var(--color-cancelada)',
+  '#7A6AA8',
   'var(--color-muted)'
 ];
 
@@ -26,6 +28,7 @@ export class AdminDashboard {
   preset = signal<Preset | null>(null);
   report = signal<ReportSummary | null>(null);
   isLoading = signal(false);
+  isExporting = signal(false);
   errorMessage = signal<string | null>(null);
 
   statusSegments = computed(() => {
@@ -124,5 +127,31 @@ export class AdminDashboard {
         this.errorMessage.set(err?.error?.message ?? 'No se pudo cargar el resumen.');
       }
     });
+  }
+
+  /** Descarga todas las citas del periodo en un CSV (se abre en Excel o LibreOffice). */
+  exportCsv(): void {
+    if (!this.startDate() || !this.endDate()) {
+      return;
+    }
+
+    this.isExporting.set(true);
+    this.errorMessage.set(null);
+
+    this.reportService.downloadAppointmentsCsv(this.startDate(), this.endDate()).subscribe({
+      next: (blob) => {
+        saveBlob(blob, `citas_${this.startDate()}_${this.endDate()}.csv`);
+        this.isExporting.set(false);
+      },
+      error: async (err) => {
+        this.isExporting.set(false);
+        this.errorMessage.set(await blobErrorMessage(err, 'No se pudo exportar las citas.'));
+      }
+    });
+  }
+
+  /** Abre el dialogo de impresion del navegador: ahi se elige "Guardar como PDF". */
+  printReport(): void {
+    window.print();
   }
 }

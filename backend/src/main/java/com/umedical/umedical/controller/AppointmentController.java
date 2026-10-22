@@ -139,4 +139,14 @@ public class AppointmentController {
 
         return ResponseEntity.ok(appointmentService.getDocumentsForAppointment(currentUser.getId(), id));
     }
+
+    @PostMapping("/{id}/no-show")
+    @Operation(summary = "Marca una cita pendiente que ya empezo como NO_ASISTIO",
+            description = "Medico dueno de la cita, SECRETARY o ADMIN. 409 si no esta pendiente o aun no empieza; 403 si no es tuya.")
+    public ResponseEntity<AppointmentResponse> markNoShow(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(appointmentService.markNoShow(currentUser.getId(), currentUser.getRoleName(), id));
+    }
 }

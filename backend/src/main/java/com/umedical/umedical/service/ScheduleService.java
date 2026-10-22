@@ -8,6 +8,7 @@ import com.umedical.umedical.entity.Doctor;
 import com.umedical.umedical.entity.Schedule;
 import com.umedical.umedical.entity.enumns.AppointmentStatus;
 import com.umedical.umedical.exception.ConflictException;
+import com.umedical.umedical.exception.ForbiddenOperationException;
 import com.umedical.umedical.exception.ResourceNotFoundException;
 import com.umedical.umedical.repository.AppointmentRepository;
 import com.umedical.umedical.repository.DoctorRepository;
@@ -25,6 +26,7 @@ import java.util.List;
  * Reglas de los bloques de horario: la hora de fin debe ser posterior a la de inicio, el slot debe caber
  * dentro del bloque, dos bloques activos del mismo medico no pueden cruzarse el mismo dia, y no se puede
  * editar ni eliminar un bloque si eso dejaria sin horario a una cita pendiente.
+ * El administrador gestiona los bloques de cualquier medico; cada medico gestiona los suyos (metodos "My").
  */
 @Service
 public class ScheduleService {
@@ -43,6 +45,8 @@ public class ScheduleService {
         this.appointmentRepository = appointmentRepository;
         this.clock = clock;
     }
+
+    // ------------------------------------------------------------------ Administrador
 
     @Transactional
     public ScheduleResponse createSchedule(ScheduleRequest request) {
@@ -104,6 +108,40 @@ public class ScheduleService {
         scheduleRepository.save(schedule);
     }
 
+    // ------------------------------------------------------------------ Medico: sus propios bloques
+
+    @Transactional(readOnly = true)
+    public List<ScheduleResponse> getMySchedules(Long doctorUserId) {
+        return getSchedulesByDoctor(findDoctorByUser(doctorUserId).getId());
+    }
+
+    @Transactional
+    public ScheduleResponse createMySchedule(Long doctorUserId, ScheduleBlockRequest block) {
+        Doctor doctor = findDoctorByUser(doctorUserId);
+
+        ScheduleRequest request = new ScheduleRequest();
+        request.setDoctorId(doctor.getId());
+        request.setDayOfWeek(block.getDayOfWeek());
+        request.setStartTime(block.getStartTime());
+        request.setEndTime(block.getEndTime());
+        request.setSlotDurationMinutes(block.getSlotDurationMinutes());
+        return createSchedule(request);
+    }
+
+    @Transactional
+    public ScheduleResponse updateMySchedule(Long doctorUserId, Long scheduleId, ScheduleBlockRequest request) {
+        assertOwnedBy(doctorUserId, findActive(scheduleId));
+        return updateSchedule(scheduleId, request);
+    }
+
+    @Transactional
+    public void deactivateMySchedule(Long doctorUserId, Long scheduleId) {
+        assertOwnedBy(doctorUserId, findActive(scheduleId));
+        deactivateSchedule(scheduleId);
+    }
+
+    // ------------------------------------------------------------------ Compartido con el alta de medicos
+
     /** Valida una lista de bloques ANTES de escribir nada en la base. */
     public void validateBlocks(List<? extends ScheduleBlockRequest> blocks) {
         for (ScheduleBlockRequest block : blocks) {
@@ -139,6 +177,17 @@ public class ScheduleService {
     }
 
     // ------------------------------------------------------------------ Privados
+
+    private Doctor findDoctorByUser(Long doctorUserId) {
+        return doctorRepository.findByUserId(doctorUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Perfil de medico no encontrado"));
+    }
+
+    private void assertOwnedBy(Long doctorUserId, Schedule schedule) {
+        if (!schedule.getDoctor().getUser().getId().equals(doctorUserId)) {
+            throw new ForbiddenOperationException("Este horario no es tuyo");
+        }
+    }
 
     private Schedule findActive(Long id) {
         return scheduleRepository.findById(id)

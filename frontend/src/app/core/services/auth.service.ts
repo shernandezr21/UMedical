@@ -64,6 +64,7 @@ export class AuthService {
       case 'ROLE_PATIENT': return '/dashboard/mis-citas';
       case 'ROLE_SECRETARY': return '/dashboard/calendario';
       case 'ROLE_ADMIN': return '/dashboard/panel';
+      case 'ROLE_DOCTOR': return '/dashboard/mi-agenda';
       default: return '/dashboard';
     }
   }

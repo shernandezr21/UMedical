@@ -54,6 +54,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/specialties/create-specialty/create-specialty').then(m => m.CreateSpecialty),
         canActivate: [roleGuard(['ROLE_ADMIN'])]
       },
+      {
+        path: 'auditoria',
+        loadComponent: () => import('./features/admin/audit/audit').then(m => m.AuditPage),
+        canActivate: [roleGuard(['ROLE_ADMIN'])]
+      },
 
       // Secretaria y admin
       {
@@ -71,6 +76,26 @@ export const routes: Routes = [
       {
         path: 'mi-agenda',
         loadComponent: () => import('./features/doctor/my-agenda/my-agenda').then(m => m.MyAgenda),
+        canActivate: [roleGuard(['ROLE_DOCTOR'])]
+      },
+            {
+        path: 'mis-pacientes',
+        loadComponent: () => import('./features/doctor/my-patients/my-patients').then(m => m.MyPatients),
+        canActivate: [roleGuard(['ROLE_DOCTOR'])]
+      },
+      {
+        path: 'mis-pacientes/:id',
+        loadComponent: () => import('./features/doctor/patient-record/patient-record').then(m => m.PatientRecordPage),
+        canActivate: [roleGuard(['ROLE_DOCTOR'])]
+      },
+      {
+        path: 'mis-horarios',
+        loadComponent: () => import('./features/doctor/my-schedule/my-schedule').then(m => m.MySchedule),
+        canActivate: [roleGuard(['ROLE_DOCTOR'])]
+      },
+      {
+        path: 'mis-estadisticas',
+        loadComponent: () => import('./features/doctor/my-stats/my-stats').then(m => m.MyStats),
         canActivate: [roleGuard(['ROLE_DOCTOR'])]
       },
 

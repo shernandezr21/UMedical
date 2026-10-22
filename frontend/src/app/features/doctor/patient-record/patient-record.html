@@ -1,0 +1,67 @@
+<a routerLink="/dashboard/mis-pacientes" class="muted">&larr; Volver a mis pacientes</a>
+
+@if (errorMessage()) {
+  <div class="alert alert-error" style="margin-top: 1rem;">{{ errorMessage() }}</div>
+}
+
+@if (isLoading()) {
+  <p class="muted" style="margin-top: 1rem;">Cargando...</p>
+} @else if (record(); as r) {
+
+  <div class="card" style="margin: 0.9rem 0 1.8rem;">
+    <div style="display: flex; gap: 1rem; align-items: center;">
+      <span class="avatar" style="width: 56px; height: 56px; font-size: 1.1rem;">{{ initials(r.patient.fullName) }}</span>
+      <div>
+        <h2 class="page-title" style="margin-bottom: 0.15rem;">{{ r.patient.fullName }}</h2>
+        <p class="muted">
+          {{ age() !== null ? age() + ' anos' : 'Edad no registrada' }}
+          · Tipo de sangre: {{ r.patient.bloodType || 'no registrado' }}
+        </p>
+      </div>
+    </div>
+
+    <div class="field-row" style="margin-top: 1.1rem; margin-bottom: 0;">
+      <p class="muted">Telefono: <strong style="color: var(--color-ink);">{{ r.patient.phone || 'no registrado' }}</strong></p>
+      <p class="muted">Correo: <strong style="color: var(--color-ink);">{{ r.patient.email || 'no registrado' }}</strong></p>
+    </div>
+    @if (r.patient.address) {
+      <p class="muted" style="margin-top: 0.4rem;">Direccion: <strong style="color: var(--color-ink);">{{ r.patient.address }}</strong></p>
+    }
+  </div>
+
+  <h3 style="font-size: 1.1rem; margin-bottom: 0.3rem;">Consultas conmigo ({{ r.visits.length }})</h3>
+  <p class="muted" style="margin-bottom: 1rem;">Solo se muestran las consultas que este paciente tuvo contigo.</p>
+
+  @for (v of r.visits; track v.appointmentId) {
+    <div class="card appt-card" [class]="'appt-card--' + v.status.toLowerCase()" style="margin-bottom: 1rem;">
+      <div style="display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start;">
+        <div>
+          <p style="font-weight: 500;">{{ dateLabel(v) }} · {{ v.appointmentTime.slice(0, 5) }}</p>
+          <p class="muted" style="margin-top: 0.2rem;">{{ v.reason || 'Sin motivo especificado' }}</p>
+        </div>
+        <span [class]="badgeClass(v)">{{ statusLabel(v) }}</span>
+      </div>
+
+      @if (v.documents.length > 0) {
+        <div class="panel">
+          @for (doc of v.documents; track doc.id) {
+            <div style="background: var(--color-bg); border-radius: var(--radius-sm); padding: 0.8rem 1rem; margin-bottom: 0.6rem;">
+              <strong style="font-size: 0.85rem;">{{ doc.type === 'RECETA' ? 'Receta' : 'Diagnostico' }}</strong>
+              <p style="font-size: 0.9rem; margin-top: 0.25rem; white-space: pre-line;">{{ doc.content }}</p>
+              @if (doc.fileName) {
+                <button type="button" class="btn btn-ghost" style="color: var(--color-primary); padding-left: 0; margin-top: 0.4rem;"
+                        (click)="viewFile(doc.id)">
+                  Ver PDF: {{ doc.fileName }}
+                </button>
+              }
+            </div>
+          }
+        </div>
+      } @else if (v.status === 'COMPLETADA') {
+        <p class="muted" style="margin-top: 0.8rem;">Esta consulta no tiene documentos registrados.</p>
+      }
+    </div>
+  } @empty {
+    <div class="card"><p class="muted">No hay consultas para mostrar.</p></div>
+  }
+}

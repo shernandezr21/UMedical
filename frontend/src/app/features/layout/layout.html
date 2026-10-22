@@ -14,10 +14,15 @@
         <a routerLink="/dashboard/doctores" routerLinkActive="active">Medicos</a>
         <a routerLink="/dashboard/especialidades" routerLinkActive="active">Especialidades</a>
         <a routerLink="/dashboard/usuarios" routerLinkActive="active">Usuarios</a>
+        <a routerLink="/dashboard/auditoria" routerLinkActive="active">Bitacora</a>
       }
       @if (role === 'ROLE_DOCTOR') {
         <a routerLink="/dashboard/mi-agenda" routerLinkActive="active">Mi agenda</a>
+        <a routerLink="/dashboard/mis-pacientes" routerLinkActive="active">Mis pacientes</a>
+        <a routerLink="/dashboard/mis-horarios" routerLinkActive="active">Mis horarios</a>
+        <a routerLink="/dashboard/mis-estadisticas" routerLinkActive="active">Estadisticas</a>
       }
+
       @if (role === 'ROLE_PATIENT') {
         <a routerLink="/dashboard/mis-citas" routerLinkActive="active">Mis citas</a>
         <a routerLink="/dashboard/agendar" routerLinkActive="active">Agendar cita</a>

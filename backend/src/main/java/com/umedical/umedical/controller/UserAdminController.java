@@ -8,6 +8,8 @@ import com.umedical.umedical.dto.SetActiveRequest;
 import com.umedical.umedical.dto.UpdateUserRequest;
 import com.umedical.umedical.dto.UserSummaryResponse;
 import com.umedical.umedical.security.CustomUserDetails;
+import com.umedical.umedical.service.AuditActions;
+import com.umedical.umedical.service.AuditService;
 import com.umedical.umedical.service.UserAdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,9 +25,11 @@ import org.springframework.web.bind.annotation.*;
 public class UserAdminController {
 
     private final UserAdminService userAdminService;
+    private final AuditService auditService;
 
-    public UserAdminController(UserAdminService userAdminService) {
+    public UserAdminController(UserAdminService userAdminService, AuditService auditService) {
         this.userAdminService = userAdminService;
+        this.auditService = auditService;
     }
 
     @GetMapping
@@ -47,7 +51,10 @@ public class UserAdminController {
             description = "Si no se envia username ni password se generan; la contrasena temporal se devuelve una sola vez. "
                     + "400 si el rol es medico o invalido, 409 si el correo o el usuario ya existen.")
     public ResponseEntity<CreatedUserResponse> create(@Valid @RequestBody CreateUserRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userAdminService.create(request));
+        CreatedUserResponse created = userAdminService.create(request);
+        auditService.record(AuditActions.USER_CREATED, "USER", created.getUser().getId(), null,
+                created.getUser().getRole());
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/{id}")
@@ -64,12 +71,17 @@ public class UserAdminController {
     public ResponseEntity<UserSummaryResponse> setActive(@AuthenticationPrincipal CustomUserDetails currentUser,
                                                          @PathVariable Long id,
                                                          @Valid @RequestBody SetActiveRequest request) {
-        return ResponseEntity.ok(userAdminService.setActive(currentUser.getId(), id, request.getActive()));
+        UserSummaryResponse updated = userAdminService.setActive(currentUser.getId(), id, request.getActive());
+        auditService.record(request.getActive() ? AuditActions.USER_ACTIVATED : AuditActions.USER_DEACTIVATED,
+                "USER", id, null, updated.getUsername());
+        return ResponseEntity.ok(updated);
     }
 
     @PostMapping("/{id}/reset-password")
     @Operation(summary = "Restablece la contrasena: genera una temporal que se devuelve una sola vez")
     public ResponseEntity<ResetPasswordResponse> resetPassword(@PathVariable Long id) {
-        return ResponseEntity.ok(userAdminService.resetPassword(id));
+        ResetPasswordResponse result = userAdminService.resetPassword(id);
+        auditService.record(AuditActions.PASSWORD_RESET, "USER", id, null, null);
+        return ResponseEntity.ok(result);
     }
 }

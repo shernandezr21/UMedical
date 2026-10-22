@@ -216,6 +216,7 @@ export class ClinicCalendar {
   }
 
   statusLabel(a: AppointmentResponse): string {
+    if (a.status === 'NO_ASISTIO') { return 'NO ASISTIO'; }
     return this.isPastPending(a) ? 'SIN ATENDER' : a.status;
   }
 
@@ -223,7 +224,33 @@ export class ClinicCalendar {
     return {
       PENDIENTE: 'badge badge-pendiente',
       COMPLETADA: 'badge badge-completada',
-      CANCELADA: 'badge badge-cancelada'
+      CANCELADA: 'badge badge-cancelada',
+      NO_ASISTIO: 'badge badge-noasistio'
     }[a.status] ?? 'badge';
+  }
+
+  hasStarted(appt: AppointmentResponse): boolean {
+    return new Date(`${appt.appointmentDate}T${appt.appointmentTime}`).getTime() <= Date.now();
+  }
+
+  markNoShow(): void {
+      const appointment = this.selected();
+      if (!appointment || !window.confirm(`¿Marcar que ${appointment.patientName} no asistio a su cita?`)) {
+        return;
+      }
+      this.isBusy.set(true);
+      this.errorMessage.set(null);
+      this.appointmentService.markNoShow(appointment.id).subscribe({
+        next: () => {
+          this.isBusy.set(false);
+          this.clearSelection();
+          this.successMessage.set('La cita quedo marcada como no asistio.');
+          this.loadWeek();
+        },
+        error: (err) => {
+          this.isBusy.set(false);
+          this.errorMessage.set(err?.error?.message ?? 'No se pudo marcar la inasistencia.');
+        }
+      });
   }
 }

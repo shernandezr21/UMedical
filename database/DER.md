@@ -1,10 +1,10 @@
 # Modelo de datos — Diagrama Entidad-Relación
 
-Base de datos **`u_medical`** (MySQL 8). El script completo está en [`schema.sql`](schema.sql).
+Base de datos **`u_medical`** . El script completo está en [`schema.sql`](schema.sql).
 
 ## Diagrama
 
-GitHub renderiza este bloque automáticamente. Para exportarlo como imagen (PNG/SVG) debemos pegar el contenido del bloque en <https://mermaid.live>.
+<https://mermaid.live>.
 
 ```mermaid
 erDiagram
@@ -17,6 +17,9 @@ erDiagram
     PATIENTS ||--o{ APPOINTMENTS : "reserva"
     SCHEDULES ||--o{ APPOINTMENTS : "origina (opcional)"
     APPOINTMENTS ||--o{ DOCUMENTS : "genera"
+    DOCTORS ||--o{ DOCTOR_TIME_OFF : "bloquea fechas"
+    USERS ||..o{ AUDIT_LOG : "actor (sin FK)"
+    PATIENTS ||..o{ AUDIT_LOG : "paciente afectado (sin FK)"
 
     ROLES {
         bigint id PK
@@ -84,9 +87,32 @@ erDiagram
         varchar file_path
         timestamp created_at
     }
+    DOCTOR_TIME_OFF {
+        bigint id PK
+        bigint doctor_id FK
+        date start_date
+        date end_date
+        varchar reason
+        timestamp created_at
+    }
+    AUDIT_LOG {
+        bigint id PK
+        datetime occurred_at
+        bigint actor_user_id
+        varchar actor_username
+        varchar actor_role
+        varchar action
+        varchar entity_type
+        bigint entity_id
+        bigint patient_id
+        varchar details
+        varchar ip_address
+    }
 ```
 
 `active_slot` en `APPOINTMENTS` es una columna generada (ver *Reglas de integridad*). En `DOCTORS` y `PATIENTS`, `user_id` además es único (relación 1 a 1 con `USERS`).
+
+Las líneas punteadas hacia `AUDIT_LOG` son **referencias lógicas, no llaves foráneas**: la bitácora debe conservarse aunque se desactive o se borre el usuario o el paciente al que se refiere (ver la sección de `audit_log`).
 
 ## Diccionario de datos
 
@@ -163,7 +189,7 @@ Bloques de atención semanales de cada médico.
 | `schedule_id` | BIGINT | FK → `schedules.id` | Bloque de origen (opcional) |
 | `appointment_date` | DATE | NN | |
 | `appointment_time` | TIME | NN | |
-| `status` | VARCHAR(20) | NN, `CHECK`, por defecto `PENDIENTE` | `PENDIENTE`, `COMPLETADA`, `CANCELADA` |
+| `status` | VARCHAR(20) | NN, `CHECK`, por defecto `PENDIENTE` | `PENDIENTE`, `COMPLETADA`, `CANCELADA`, `NO_ASISTIO` (el paciente no se presentó a una cita que ya empezó) |
 | `reason` | VARCHAR(255) | | Motivo de la consulta |
 | `cancellation_reason` | VARCHAR(255) | | Motivo si la cita se canceló |
 | `created_at` | TIMESTAMP | NN | |
@@ -182,29 +208,35 @@ Diagnósticos y recetas de una cita.
 | `file_path` | VARCHAR(500) | | Ruta del PDF en el servidor (opcional) |
 | `created_at` | TIMESTAMP | NN | |
 
-## Justificación de la normalización (3FN)
+### `doctor_time_off`
+Rangos de fechas en que un médico no atiende (vacaciones, congreso, ausencia). Mientras un bloqueo está vigente, el sistema no ofrece horarios de ese médico en esas fechas.
 
-1. **1FN.** Todos los atributos son atómicos: no hay listas ni grupos repetidos dentro de una columna.
-2. **2FN.** Todas las tablas usan una clave primaria simple (`id`), por lo que no existen dependencias parciales.
-3. **3FN.** No hay dependencias transitivas:
-   - Los datos exclusivos de un médico (colegiado, biografía, especialidad) están en `doctors`, y los exclusivos de un paciente (nacimiento, dirección, tipo de sangre) en `patients`, no en `users`. Así no hay columnas vacías para administradores o secretarias y cada atributo depende solo de su propia clave.
-   - Los nombres del médico y del paciente **no se copian** en `appointments`: la cita solo guarda `doctor_id` y `patient_id`.
-   - El catálogo de especialidades y de roles está en tablas propias referenciadas por clave foránea.
-   - Los diagnósticos y recetas están en `documents`, no como columnas de la cita: una cita puede tener varios documentos.
+| Columna | Tipo | Restricciones | Descripción |
+|---|---|---|---|
+| `id` | BIGINT | PK | |
+| `doctor_id` | BIGINT | FK → `doctors.id`, NN, `ON DELETE CASCADE` | |
+| `start_date` | DATE | NN | Primer día no disponible |
+| `end_date` | DATE | NN, `CHECK (end_date >= start_date)` | Último día no disponible (incluido) |
+| `reason` | VARCHAR(255) | | Motivo (si se cancelan citas, es el que ve el paciente) |
+| `created_at` | TIMESTAMP | NN | |
 
-## Reglas de integridad reforzadas en el esquema
+### `audit_log`
+Bitácora de auditoría: quién hizo qué y cuándo (acceso a información clínica, cambios de cuentas, exportaciones). **Solo se inserta**: la aplicación no tiene operaciones para editar ni borrar registros.
 
-| Regla | Mecanismo |
-|---|---|
-| Un médico no puede tener dos citas **activas** a la misma fecha y hora | `UNIQUE (doctor_id, appointment_date, appointment_time, active_slot)`. Como `active_slot` es `NULL` en las citas canceladas (y MySQL permite varios `NULL` en un índice único), un horario cancelado queda libre para volver a reservarse. |
-| Estados de cita y tipos de documento válidos | `CHECK` sobre `appointments.status` y `documents.type` |
-| Bloques de horario coherentes | `CHECK (end_time > start_time)` y `CHECK (day_of_week BETWEEN 1 AND 7)` |
-| Un usuario tiene como máximo un perfil de médico y uno de paciente | `UNIQUE (user_id)` en `doctors` y `patients` |
-| No quedan perfiles ni documentos huérfanos | `ON DELETE CASCADE` desde `users` hacia `doctors`/`patients`, y desde `appointments` hacia `documents` |
-| Correo, usuario, colegiado y nombre de especialidad sin duplicados | `UNIQUE` en esas columnas |
-
-Índices de apoyo: `users(role_id)`, `doctors(specialty_id)`, `schedules(doctor_id, day_of_week)`, `appointments(patient_id)`, `appointments(doctor_id, appointment_date)` y `documents(appointment_id)`.
+| Columna | Tipo | Restricciones | Descripción |
+|---|---|---|---|
+| `id` | BIGINT | PK | |
+| `occurred_at` | DATETIME | NN | Fecha y hora **de la clínica** (la fija la aplicación) |
+| `actor_user_id` | BIGINT | | Usuario que realizó la acción (referencia lógica a `users.id`, sin FK) |
+| `actor_username` | VARCHAR(50) | NN | Copia del nombre de usuario en ese momento |
+| `actor_role` | VARCHAR(30) | NN | Copia del rol en ese momento |
+| `action` | VARCHAR(40) | NN | Ej. `DOCUMENTS_VIEWED`, `PATIENT_RECORD_VIEWED`, `USER_DEACTIVATED`, `REPORT_EXPORTED` |
+| `entity_type` | VARCHAR(30) | | `APPOINTMENT`, `DOCUMENT`, `PATIENT`, `USER`, `DOCTOR`, `REPORT` |
+| `entity_id` | BIGINT | | Id de la entidad afectada |
+| `patient_id` | BIGINT | | Paciente afectado, si lo hay (referencia lógica a `patients.id`, sin FK) |
+| `details` | VARCHAR(500) | | Información adicional (tipo de documento, filas exportadas…) |
+| `ip_address` | VARCHAR(45) | | Dirección IP desde la que se hizo la petición |
 
 ## Datos semilla
 
-`schema.sql` crea los 4 roles, 4 especialidades de ejemplo, 1 administrador, 2 médicos, 1 paciente y sus horarios. Los scripts opcionales `seed-secretaria.sql` y `seed-citas-pasadas.sql` agregan una secretaria y citas pasadas con documentos para probar el historial.
+`schema.sql` crea las 10 tablas, los 4 roles, 4 especialidades de ejemplo, 1 administrador, 2 médicos, 1 paciente y sus horarios. El script opcional `seed-citas-pasadas.sql` agrega citas pasadas con documentos para probar el historial.

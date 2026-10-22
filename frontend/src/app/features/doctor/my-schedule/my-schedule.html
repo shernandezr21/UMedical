@@ -1,0 +1,167 @@
+<h2 class="page-title">Mis horarios</h2>
+<p class="page-subtitle">Cuando atiendes cada semana, y los dias en que no estaras disponible.</p>
+
+@if (errorMessage()) {
+  <div class="alert alert-error">{{ errorMessage() }}</div>
+}
+@if (successMessage()) {
+  <div class="alert alert-success">{{ successMessage() }}</div>
+}
+
+<!-- ================================================= Horarios de atencion -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin: 0.5rem 0 1rem;">
+  <h3 style="font-size: 1.15rem;">Horarios de atencion</h3>
+  <button type="button" class="btn btn-primary" (click)="openCreate()">Agregar bloque</button>
+</div>
+
+@if (formOpen()) {
+  <div class="card" style="margin-bottom: 1.5rem;">
+    <h4 style="font-size: 1.05rem; margin-bottom: 1.1rem;">{{ editingId() === null ? 'Nuevo bloque' : 'Editar bloque' }}</h4>
+
+    @if (formError()) {
+      <div class="alert alert-error">{{ formError() }}</div>
+    }
+
+    <form [formGroup]="blockForm" (ngSubmit)="saveBlock()" novalidate>
+      <div class="field-row">
+        <label class="field">
+          <span>Dia de la semana</span>
+          <select formControlName="dayOfWeek">
+            <option [ngValue]="null" disabled>Selecciona un dia</option>
+            @for (d of days; track d.value) {
+              <option [ngValue]="d.value">{{ d.label }}</option>
+            }
+          </select>
+        </label>
+        <label class="field">
+          <span>Duracion de cada cita (min)</span>
+          <input type="number" min="5" formControlName="slotDurationMinutes" />
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label class="field">
+          <span>Hora de inicio</span>
+          <input type="time" formControlName="startTime" />
+        </label>
+        <label class="field">
+          <span>Hora de fin</span>
+          <input type="time" formControlName="endTime" />
+        </label>
+      </div>
+
+      @if (blockForm.errors?.['endBeforeStart']) {
+        <p class="field__hint" style="margin-bottom: 0.8rem;">La hora de fin debe ser posterior a la hora de inicio.</p>
+      }
+      @if (blockForm.errors?.['slotTooLong']) {
+        <p class="field__hint" style="margin-bottom: 0.8rem;">La duracion de la cita no cabe dentro del bloque.</p>
+      }
+      @if (blockForm.touched && blockForm.invalid && !blockForm.errors) {
+        <p class="field__hint" style="margin-bottom: 0.8rem;">Completa todos los campos del bloque.</p>
+      }
+
+      <div style="display: flex; gap: 0.6rem;">
+        <button type="submit" class="btn btn-primary" [disabled]="isSaving()">
+          {{ isSaving() ? 'Guardando...' : 'Guardar bloque' }}
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+}
+
+@if (blocksLoading()) {
+  <p class="muted">Cargando...</p>
+} @else {
+  @for (b of sortedBlocks(); track b.id) {
+    <div class="card" style="margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+      <div>
+        <p style="font-weight: 500;">{{ dayLabel(b.dayOfWeek) }}</p>
+        <p class="muted">{{ b.startTime.slice(0, 5) }} a {{ b.endTime.slice(0, 5) }} · citas de {{ b.slotDurationMinutes }} min</p>
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="button" class="btn btn-secondary" (click)="openEdit(b)">Editar</button>
+        <button type="button" class="btn btn-secondary" (click)="removeBlock(b)">Eliminar</button>
+      </div>
+    </div>
+  } @empty {
+    <div class="card">
+      <p class="muted">No tienes horarios configurados, asi que nadie puede agendar contigo.</p>
+    </div>
+  }
+}
+
+<p class="muted" style="margin: 0.5rem 0 2.2rem;">
+  No se puede cambiar ni eliminar un bloque si eso dejaria sin horario a una cita pendiente: primero hay que reagendarla o cancelarla.
+</p>
+
+<!-- ================================================= Dias no disponibles -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+  <h3 style="font-size: 1.15rem;">Dias no disponibles</h3>
+  <button type="button" class="btn btn-primary" (click)="openOffForm()">Bloquear dias</button>
+</div>
+
+@if (offFormOpen()) {
+  <div class="card" style="margin-bottom: 1.5rem;">
+    <h4 style="font-size: 1.05rem; margin-bottom: 0.3rem;">Bloquear dias</h4>
+    <p class="muted" style="margin-bottom: 1.1rem;">En estas fechas no se podran reservar citas contigo (vacaciones, congreso, ausencia...).</p>
+
+    @if (offError()) {
+      <div class="alert alert-error">{{ offError() }}</div>
+    }
+
+    <form [formGroup]="offForm" (ngSubmit)="saveTimeOff()" novalidate>
+      <div class="field-row">
+        <label class="field">
+          <span>Desde</span>
+          <input type="date" formControlName="startDate" [min]="today" />
+        </label>
+        <label class="field">
+          <span>Hasta (incluido)</span>
+          <input type="date" formControlName="endDate" [min]="today" />
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Motivo (opcional)</span>
+        <input type="text" maxlength="200" formControlName="reason" placeholder="Ej. Vacaciones" />
+      </label>
+
+      <label style="display: flex; gap: 0.6rem; align-items: flex-start; margin-bottom: 1.1rem; font-size: 0.9rem;">
+        <input type="checkbox" formControlName="cancelExisting" style="margin-top: 0.25rem;" />
+        <span>
+          Cancelar las citas pendientes que haya en esas fechas.
+          <span class="muted" style="display: block;">
+            Si hay citas y no marcas esta opcion, el bloqueo se rechaza. Al cancelar, el motivo de arriba es obligatorio:
+            cada paciente lo ve en su cita.
+          </span>
+        </span>
+      </label>
+
+      <div style="display: flex; gap: 0.6rem;">
+        <button type="submit" class="btn btn-primary" [disabled]="offSaving()">
+          {{ offSaving() ? 'Guardando...' : 'Bloquear dias' }}
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="closeOffForm()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+}
+
+@if (timeOffLoading()) {
+  <p class="muted">Cargando...</p>
+} @else {
+  @for (t of timeOffs(); track t.id) {
+    <div class="card" style="margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+      <div>
+        <p style="font-weight: 500;">{{ rangeLabel(t) }}</p>
+        <p class="muted">{{ t.reason || 'Sin motivo' }}</p>
+      </div>
+      <button type="button" class="btn btn-secondary" (click)="removeTimeOff(t)">Quitar bloqueo</button>
+    </div>
+  } @empty {
+    <div class="card">
+      <p class="muted">No tienes dias bloqueados proximos.</p>
+    </div>
+  }
+}
