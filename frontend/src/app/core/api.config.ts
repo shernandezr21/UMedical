@@ -7,7 +7,6 @@ export const API_BASE_URL = 'http://localhost:8080/api/v1';
  * En produccion van las claves reales de nuestro panel de Cloudflare.
  */
 
-export const CAPTCHA_SITE_KEY = '2x0000000000000000000000000000000AA';
+export const CAPTCHA_SITE_KEY = '';
 
 // Clave de prueba de Cloudflare Turnstile: 1x00000000000000000000AA
-// CAPTCHA_SITE_KEY = '1x00000000000000000000AA'
