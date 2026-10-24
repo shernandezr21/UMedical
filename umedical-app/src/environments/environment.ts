@@ -1,7 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 
 // Cambiar valor siempre que se cambie de red, a IP que asigne router a dispositivo. 
-const LAN_IP = '192.168.0.15';
+const LAN_IP = '192.168.0.89';
 
 export const environment = {
   production: false,

@@ -1,0 +1,30 @@
+# {$DOMAIN} viene de la variable DOMAIN del archivo .env (ej. umedical-demo.duckdns.org).
+# Caddy obtiene y renueva solo el certificado HTTPS (Let's Encrypt) y redirige http -> https.
+{$DOMAIN} {
+	encode gzip zstd
+
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	# PDF de hasta 10 MB
+	request_body {
+		max_size 12MB
+	}
+
+	# API y documentacion (Swagger) -> backend
+	@backend path /api/* /swagger-ui /swagger-ui/* /swagger-ui.html /api-docs /api-docs/*
+	handle @backend {
+		reverse_proxy api:8080
+	}
+
+	# Todo lo demas -> panel Angular (con respaldo a index.html para las rutas del navegador)
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}
